@@ -1,0 +1,771 @@
+<!--
+Design plan
+Color: --ink #262430 (near-black, violet bias) · --paper #F5F3EF (stone, cool-warm neutral) · --accent #7B3341 (bordeaux) ·
+  quadrant hues — Profissional #46618C (dusty blue) · Pessoal #5C7A5E (sage) · Relacionamentos #B2697A (dusty rose) · Qualidade de vida #B08D3E (ochre)
+Type: display = Fraunces (literary serif, restrained use for headings/month name) · body + data = Libre Franklin (humanist grotesque, tabular-nums for scores)
+Layout: a wheel (SVG, 12 wedges grouped by quadrant, radius = nota do mês) anchors the top; three quiet panels below (Semana, Metas anuais, Despejo) in a responsive grid; a collapsed form surfaces only when the month's notes are missing or when opened deliberately.
+-->
+<title>Roda da Vida</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,500&family=Libre+Franklin:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+<style>
+  :root {
+    --ink: #262430;
+    --ink-soft: #5b5767;
+    --paper: #f5f3ef;
+    --surface: #ffffff;
+    --border: #e4e0d8;
+    --accent: #7b3341;
+    --accent-soft: #f1e3e0;
+
+    --q-prof: #46618c;
+    --q-prof-soft: #dde6f0;
+    --q-pes: #5c7a5e;
+    --q-pes-soft: #e1eadf;
+    --q-rel: #b2697a;
+    --q-rel-soft: #f3e2e5;
+    --q-qdv: #b08d3e;
+    --q-qdv-soft: #f1e9d4;
+
+    --shadow: 0 1px 2px rgba(38,36,48,0.04), 0 6px 20px rgba(38,36,48,0.06);
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --ink: #efe9e4;
+      --ink-soft: #b9b2c2;
+      --paper: #1c1a22;
+      --surface: #262430;
+      --border: #38353f;
+      --accent: #e39aa8;
+      --accent-soft: #3a2429;
+
+      --q-prof: #7fa0d6;
+      --q-prof-soft: #27344a;
+      --q-pes: #92b894;
+      --q-pes-soft: #263228;
+      --q-rel: #d99aa9;
+      --q-rel-soft: #3a2730;
+      --q-qdv: #d8b969;
+      --q-qdv-soft: #392f1c;
+
+      --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 6px 24px rgba(0,0,0,0.35);
+    }
+  }
+
+  :root[data-theme="dark"] {
+    --ink: #efe9e4;
+    --ink-soft: #b9b2c2;
+    --paper: #1c1a22;
+    --surface: #262430;
+    --border: #38353f;
+    --accent: #e39aa8;
+    --accent-soft: #3a2429;
+
+    --q-prof: #7fa0d6;
+    --q-prof-soft: #27344a;
+    --q-pes: #92b894;
+    --q-pes-soft: #263228;
+    --q-rel: #d99aa9;
+    --q-rel-soft: #3a2730;
+    --q-qdv: #d8b969;
+    --q-qdv-soft: #392f1c;
+
+    --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 6px 24px rgba(0,0,0,0.35);
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: "Libre Franklin", system-ui, sans-serif;
+    font-variant-numeric: tabular-nums;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .page {
+    max-width: 980px;
+    margin: 0 auto;
+    padding: 2.5rem 1.5rem 5rem;
+  }
+
+  header.top {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 2rem;
+    flex-wrap: wrap;
+  }
+
+  .brand {
+    font-family: "Fraunces", serif;
+    font-weight: 500;
+    font-size: 1.6rem;
+    letter-spacing: 0.01em;
+  }
+
+  .brand em {
+    font-style: italic;
+    color: var(--accent);
+  }
+
+  .tagline {
+    color: var(--ink-soft);
+    font-size: 0.88rem;
+    letter-spacing: 0.02em;
+  }
+
+  main.wheel-block {
+    display: grid;
+    grid-template-columns: minmax(280px, 420px) 1fr;
+    gap: 2.5rem;
+    align-items: center;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 18px;
+    padding: 2rem;
+    box-shadow: var(--shadow);
+    margin-bottom: 1.75rem;
+  }
+
+  @media (max-width: 720px) {
+    main.wheel-block { grid-template-columns: 1fr; }
+  }
+
+  .wheel-wrap {
+    position: relative;
+    display: flex;
+    justify-content: center;
+  }
+
+  .wheel-center-label {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+    pointer-events: none;
+  }
+
+  .wheel-center-label .mes {
+    font-family: "Fraunces", serif;
+    font-style: italic;
+    font-size: 1.05rem;
+    display: block;
+  }
+
+  .wheel-center-label .media {
+    font-size: 1.9rem;
+    font-weight: 600;
+    display: block;
+    line-height: 1.1;
+  }
+
+  .wheel-center-label .media-label {
+    font-size: 0.68rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+  }
+
+  .legend-col h2 {
+    font-family: "Fraunces", serif;
+    font-weight: 500;
+    font-size: 1.15rem;
+    margin: 0 0 0.9rem;
+  }
+
+  .quad-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.65rem;
+    margin-bottom: 0.85rem;
+  }
+
+  .quad-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    margin-top: 0.35rem;
+    flex-shrink: 0;
+  }
+
+  .quad-name {
+    font-weight: 600;
+    font-size: 0.92rem;
+  }
+
+  .quad-areas {
+    font-size: 0.82rem;
+    color: var(--ink-soft);
+    line-height: 1.5;
+  }
+
+  .quad-areas .score {
+    font-weight: 600;
+    color: var(--ink);
+  }
+
+  .edit-toggle {
+    margin-top: 1rem;
+    font-size: 0.82rem;
+    background: none;
+    border: 1px solid var(--border);
+    color: var(--ink-soft);
+    border-radius: 8px;
+    padding: 0.4rem 0.75rem;
+    cursor: pointer;
+    font-family: inherit;
+  }
+  .edit-toggle:hover { border-color: var(--accent); color: var(--accent); }
+
+  section.panels {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.25rem;
+  }
+
+  @media (max-width: 720px) {
+    section.panels { grid-template-columns: 1fr; }
+  }
+
+  .panel {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 1.4rem 1.5rem;
+    box-shadow: var(--shadow);
+  }
+
+  .panel.wide { grid-column: 1 / -1; }
+
+  .panel h3 {
+    font-family: "Fraunces", serif;
+    font-weight: 500;
+    font-size: 1.05rem;
+    margin: 0 0 0.75rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .panel .empty {
+    color: var(--ink-soft);
+    font-size: 0.88rem;
+    font-style: italic;
+  }
+
+  .despejo-list {
+    max-height: 340px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .despejo-entry {
+    border-left: 2px solid var(--accent-soft);
+    padding-left: 0.9rem;
+  }
+
+  .despejo-entry .data {
+    font-size: 0.72rem;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--accent);
+    font-weight: 600;
+  }
+
+  .despejo-entry .texto {
+    font-size: 0.9rem;
+    line-height: 1.55;
+    margin-top: 0.2rem;
+  }
+
+  .metas-list, .semana-list {
+    font-size: 0.9rem;
+    line-height: 1.7;
+    white-space: pre-wrap;
+  }
+
+  dialog.scores-form {
+    border: none;
+    border-radius: 16px;
+    padding: 0;
+    max-width: 560px;
+    width: 92vw;
+    background: var(--surface);
+    color: var(--ink);
+    box-shadow: 0 20px 60px rgba(0,0,0,0.25);
+  }
+
+  dialog.scores-form::backdrop {
+    background: rgba(20, 18, 24, 0.45);
+  }
+
+  .form-inner {
+    padding: 1.75rem;
+    max-height: 80vh;
+    overflow-y: auto;
+  }
+
+  .form-inner h2 {
+    font-family: "Fraunces", serif;
+    font-weight: 500;
+    margin: 0 0 0.3rem;
+  }
+
+  .form-inner .sub {
+    color: var(--ink-soft);
+    font-size: 0.85rem;
+    margin-bottom: 1.3rem;
+  }
+
+  .score-grid {
+    display: grid;
+    grid-template-columns: 1fr 72px;
+    gap: 0.6rem 0.8rem;
+    align-items: center;
+    margin-bottom: 1.4rem;
+  }
+
+  .score-grid label {
+    font-size: 0.86rem;
+  }
+
+  .score-grid input {
+    width: 100%;
+    padding: 0.35rem 0.5rem;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    font-family: inherit;
+    font-size: 0.9rem;
+    background: var(--paper);
+    color: var(--ink);
+    text-align: center;
+  }
+
+  .form-field { margin-bottom: 1.1rem; }
+  .form-field label {
+    display: block;
+    font-size: 0.8rem;
+    letter-spacing: 0.02em;
+    color: var(--ink-soft);
+    margin-bottom: 0.3rem;
+  }
+  .form-field textarea {
+    width: 100%;
+    min-height: 56px;
+    padding: 0.55rem 0.7rem;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    font-family: inherit;
+    font-size: 0.88rem;
+    background: var(--paper);
+    color: var(--ink);
+    resize: vertical;
+  }
+
+  .form-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.6rem;
+    margin-top: 0.5rem;
+  }
+
+  button.primary {
+    background: var(--accent);
+    color: var(--surface);
+    border: none;
+    border-radius: 8px;
+    padding: 0.55rem 1.1rem;
+    font-family: inherit;
+    font-weight: 600;
+    font-size: 0.88rem;
+    cursor: pointer;
+  }
+
+  button.secondary {
+    background: none;
+    border: 1px solid var(--border);
+    color: var(--ink-soft);
+    border-radius: 8px;
+    padding: 0.55rem 1.1rem;
+    font-family: inherit;
+    font-size: 0.88rem;
+    cursor: pointer;
+  }
+
+  button:focus-visible, .edit-toggle:focus-visible, input:focus-visible, textarea:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+  }
+
+  .status-msg {
+    font-size: 0.78rem;
+    color: var(--ink-soft);
+    margin-top: 0.6rem;
+    min-height: 1em;
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .wedge { transition: d 0.5s ease; }
+  }
+</style>
+
+<div class="page">
+  <header class="top">
+    <div>
+      <div class="brand">Roda da <em>Vida</em></div>
+      <div class="tagline">O equilíbrio do mês, visto por Amélie</div>
+    </div>
+  </header>
+
+  <main class="wheel-block">
+    <div class="wheel-wrap">
+      <svg id="wheel" viewBox="0 0 400 400" width="100%" style="max-width:380px"></svg>
+      <div class="wheel-center-label">
+        <span class="mes" id="mesAtual">—</span>
+        <span class="media" id="mediaGeral">—</span>
+        <span class="media-label">média do mês</span>
+      </div>
+    </div>
+    <div class="legend-col">
+      <h2>As 12 áreas</h2>
+      <div id="legend"></div>
+      <button class="edit-toggle" id="btnEditar" type="button">Atualizar notas do mês</button>
+    </div>
+  </main>
+
+  <section class="panels">
+    <div class="panel">
+      <h3>Semana atual</h3>
+      <div class="semana-list" id="semanaConteudo"><span class="empty">Nada registrado ainda para esta semana.</span></div>
+    </div>
+    <div class="panel">
+      <h3>Metas do ano</h3>
+      <div class="metas-list" id="metasConteudo"><span class="empty">As metas anuais ainda não foram definidas.</span></div>
+    </div>
+    <div class="panel wide">
+      <h3>Despejo</h3>
+      <div class="despejo-list" id="despejoConteudo"><span class="empty">Nenhum despejo registrado ainda — o primeiro chega no próximo domingo.</span></div>
+    </div>
+  </section>
+</div>
+
+<dialog class="scores-form" id="dlgForm">
+  <div class="form-inner">
+    <h2>Notas da Roda da Vida</h2>
+    <div class="sub" id="formMesLabel">De 1 (vazio) a 10 (pleno) para cada área, pensando no mês.</div>
+    <form id="scoresForm">
+      <div class="score-grid" id="scoreGrid"></div>
+      <div class="form-field">
+        <label for="fMaiorNecessidade">Maior necessidade do mês</label>
+        <textarea id="fMaiorNecessidade" placeholder="Ex: mês de provas, foco em descansar, entrega do projeto X..."></textarea>
+      </div>
+      <div class="form-field">
+        <label for="fPendencias">Pendências do mês anterior</label>
+        <textarea id="fPendencias"></textarea>
+      </div>
+      <div class="form-field">
+        <label for="fPrioridades">Prioridades do mês seguinte</label>
+        <textarea id="fPrioridades"></textarea>
+      </div>
+      <div class="form-actions">
+        <button type="button" class="secondary" id="btnCancelar">Cancelar</button>
+        <button type="submit" class="primary">Salvar</button>
+      </div>
+      <div class="status-msg" id="formStatus"></div>
+    </form>
+  </div>
+</dialog>
+
+<script>
+(function () {
+  const AREAS = [
+    { key: "contribuicao_social", label: "Contribuição social", quad: "prof" },
+    { key: "financas_bens", label: "Finanças e bens", quad: "prof" },
+    { key: "realizacao_proposito", label: "Realização e propósito", quad: "prof" },
+    { key: "familia", label: "Família", quad: "rel" },
+    { key: "relacionamentos_amorosos", label: "Relacionamentos amorosos", quad: "rel" },
+    { key: "vida_social", label: "Vida social", quad: "rel" },
+    { key: "espiritualidade", label: "Espiritualidade", quad: "qdv" },
+    { key: "plenitude_felicidade", label: "Plenitude e felicidade", quad: "qdv" },
+    { key: "lazer_diversao", label: "Lazer e diversão", quad: "qdv" },
+    { key: "saude_disposicao", label: "Saúde e disposição", quad: "pes" },
+    { key: "desenvolvimento_intelecto", label: "Desenvolvimento do intelecto", quad: "pes" },
+    { key: "equilibrio_emocional", label: "Equilíbrio emocional", quad: "pes" }
+  ];
+
+  const QUADS = {
+    prof: { name: "Profissional", var: "--q-prof" },
+    pes: { name: "Pessoal", var: "--q-pes" },
+    rel: { name: "Relacionamentos", var: "--q-rel" },
+    qdv: { name: "Qualidade de vida", var: "--q-qdv" }
+  };
+
+  const MESES = ["janeiro","fevereiro","março","abril","maio","junho","julho","agosto","setembro","outubro","novembro","dezembro"];
+
+  function monthId(d) {
+    return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0");
+  }
+
+  function cssVar(name) {
+    return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+  }
+
+  function shadeFor(quad, idxInQuad) {
+    // idxInQuad 0,1,2 -> vary opacity so the three areas of one quadrant read distinctly
+    const opacities = [1, 0.74, 0.5];
+    return { color: cssVar(QUADS[quad].var), opacity: opacities[idxInQuad] };
+  }
+
+  function polarToXY(cx, cy, r, angleDeg) {
+    const a = (angleDeg - 90) * Math.PI / 180;
+    return [cx + r * Math.cos(a), cy + r * Math.sin(a)];
+  }
+
+  function wedgePath(cx, cy, rInner, rOuter, startDeg, endDeg) {
+    const [x1, y1] = polarToXY(cx, cy, rOuter, startDeg);
+    const [x2, y2] = polarToXY(cx, cy, rOuter, endDeg);
+    const [x3, y3] = polarToXY(cx, cy, rInner, endDeg);
+    const [x4, y4] = polarToXY(cx, cy, rInner, startDeg);
+    const large = endDeg - startDeg > 180 ? 1 : 0;
+    return [
+      "M", x1, y1,
+      "A", rOuter, rOuter, 0, large, 1, x2, y2,
+      "L", x3, y3,
+      "A", rInner, rInner, 0, large, 0, x4, y4,
+      "Z"
+    ].join(" ");
+  }
+
+  function drawWheel(scores) {
+    const svg = document.getElementById("wheel");
+    svg.innerHTML = "";
+    const cx = 200, cy = 200, rInner = 34, rMax = 178;
+    const slice = 360 / AREAS.length;
+
+    // backdrop rings (score guide at 1..10)
+    for (let g = 2; g <= 10; g += 2) {
+      const r = rInner + (g / 10) * (rMax - rInner);
+      const circle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+      circle.setAttribute("cx", cx); circle.setAttribute("cy", cy); circle.setAttribute("r", r);
+      circle.setAttribute("fill", "none");
+      circle.setAttribute("stroke", cssVar("--border"));
+      circle.setAttribute("stroke-width", "1");
+      svg.appendChild(circle);
+    }
+
+    const quadCounts = {};
+    AREAS.forEach(a => { quadCounts[a.quad] = (quadCounts[a.quad] || 0); });
+
+    AREAS.forEach((area, i) => {
+      const startDeg = i * slice;
+      const endDeg = startDeg + slice;
+      const score = (scores && typeof scores[area.key] === "number") ? scores[area.key] : 0;
+      const r = rInner + Math.max(score, 0.4) / 10 * (rMax - rInner);
+      const idxInQuad = quadCounts[area.quad]++;
+      const shade = shadeFor(area.quad, idxInQuad);
+
+      const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+      path.setAttribute("class", "wedge");
+      path.setAttribute("d", wedgePath(cx, cy, rInner, r, startDeg + 1.2, endDeg - 1.2));
+      path.setAttribute("fill", shade.color);
+      path.setAttribute("opacity", shade.opacity);
+      svg.appendChild(path);
+
+      // label
+      const labelR = rMax + 14;
+      const midDeg = startDeg + slice / 2;
+      const [lx, ly] = polarToXY(cx, cy, labelR, midDeg);
+      const text = document.createElementNS("http://www.w3.org/2000/svg", "text");
+      text.setAttribute("x", lx); text.setAttribute("y", ly);
+      text.setAttribute("text-anchor", midDeg > 180 ? "end" : (midDeg === 0 || midDeg === 180 ? "middle" : "start"));
+      text.setAttribute("font-size", "9.5");
+      text.setAttribute("font-family", "Libre Franklin, sans-serif");
+      text.setAttribute("fill", cssVar("--ink-soft"));
+      text.textContent = area.label.length > 16 ? area.label.slice(0, 15) + "…" : area.label;
+      svg.appendChild(text);
+    });
+
+    // center hub
+    const hub = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+    hub.setAttribute("cx", cx); hub.setAttribute("cy", cy); hub.setAttribute("r", rInner - 4);
+    hub.setAttribute("fill", cssVar("--surface"));
+    hub.setAttribute("stroke", cssVar("--border"));
+    svg.appendChild(hub);
+  }
+
+  function renderLegend(scores) {
+    const el = document.getElementById("legend");
+    el.innerHTML = "";
+    Object.keys(QUADS).forEach(qkey => {
+      const q = QUADS[qkey];
+      const areas = AREAS.filter(a => a.quad === qkey);
+      const row = document.createElement("div");
+      row.className = "quad-row";
+      const dot = document.createElement("div");
+      dot.className = "quad-dot";
+      dot.style.background = cssVar(q.var);
+      const textWrap = document.createElement("div");
+      const name = document.createElement("div");
+      name.className = "quad-name";
+      name.textContent = q.name;
+      const areasEl = document.createElement("div");
+      areasEl.className = "quad-areas";
+      areasEl.innerHTML = areas.map(a => {
+        const s = scores && typeof scores[a.key] === "number" ? scores[a.key] : "—";
+        return a.label + ' <span class="score">' + s + '</span>';
+      }).join("<br>");
+      textWrap.appendChild(name);
+      textWrap.appendChild(areasEl);
+      row.appendChild(dot);
+      row.appendChild(textWrap);
+      el.appendChild(row);
+    });
+  }
+
+  function average(scores) {
+    if (!scores) return null;
+    const vals = AREAS.map(a => scores[a.key]).filter(v => typeof v === "number");
+    if (!vals.length) return null;
+    return (vals.reduce((a, b) => a + b, 0) / vals.length).toFixed(1);
+  }
+
+  function buildForm(existing) {
+    const grid = document.getElementById("scoreGrid");
+    grid.innerHTML = "";
+    AREAS.forEach(a => {
+      const label = document.createElement("label");
+      label.setAttribute("for", "in_" + a.key);
+      label.textContent = a.label;
+      const input = document.createElement("input");
+      input.type = "number";
+      input.min = "1"; input.max = "10"; input.step = "1";
+      input.id = "in_" + a.key;
+      input.name = a.key;
+      if (existing && typeof existing[a.key] === "number") input.value = existing[a.key];
+      grid.appendChild(label);
+      grid.appendChild(input);
+    });
+    document.getElementById("fMaiorNecessidade").value = (existing && existing.maiorNecessidade) || "";
+    document.getElementById("fPendencias").value = (existing && existing.pendenciasMesAnterior) || "";
+    document.getElementById("fPrioridades").value = (existing && existing.prioridadesMesSeguinte) || "";
+  }
+
+  function renderDespejo(entries) {
+    const el = document.getElementById("despejoConteudo");
+    if (!entries || !entries.length) return;
+    el.innerHTML = "";
+    entries.slice().sort((a, b) => (b.data || "").localeCompare(a.data || "")).forEach(e => {
+      const div = document.createElement("div");
+      div.className = "despejo-entry";
+      const dEl = document.createElement("div");
+      dEl.className = "data";
+      dEl.textContent = (e.tipo === "semana_mes" ? "Semana + mês · " : "Semana · ") + (e.data || "");
+      const tEl = document.createElement("div");
+      tEl.className = "texto";
+      tEl.textContent = e.texto || "";
+      div.appendChild(dEl);
+      div.appendChild(tEl);
+      el.appendChild(div);
+    });
+  }
+
+  function renderSemana(doc) {
+    const el = document.getElementById("semanaConteudo");
+    if (!doc || !doc.texto) return;
+    el.textContent = doc.texto;
+  }
+
+  function renderMetas(doc) {
+    const el = document.getElementById("metasConteudo");
+    if (!doc) return;
+    let out = "";
+    if (doc.metas) out += doc.metas;
+    if (doc.acoes) out += (out ? "\n\n— Ações por área —\n" : "") + doc.acoes;
+    if (out) el.textContent = out;
+  }
+
+  async function main() {
+    const now = new Date();
+    const mid = monthId(now);
+    document.getElementById("mesAtual").textContent = MESES[now.getMonth()] + " " + now.getFullYear();
+
+    let scores = null, despejoEntries = [], semanaDoc = null, metasDoc = null;
+
+    try {
+      const db = await claude.use("db");
+      if (db) {
+        try {
+          const doc = await db.doc("mandala/" + mid).get();
+          scores = doc && doc.data ? doc.data : null;
+        } catch (e) {}
+        try {
+          const list = await db.collection("despejo").get({ limit: 20 });
+          despejoEntries = (list && list.docs) ? list.docs.map(d => d.data) : [];
+        } catch (e) {}
+        try {
+          const sdoc = await db.doc("semana/atual").get();
+          semanaDoc = sdoc && sdoc.data ? sdoc.data : null;
+        } catch (e) {}
+        try {
+          const ydoc = await db.doc("metas/" + now.getFullYear()).get();
+          metasDoc = ydoc && ydoc.data ? ydoc.data : null;
+        } catch (e) {}
+
+        document.getElementById("scoresForm").addEventListener("submit", async function (ev) {
+          ev.preventDefault();
+          const statusEl = document.getElementById("formStatus");
+          const payload = {};
+          AREAS.forEach(a => {
+            const v = parseFloat(document.getElementById("in_" + a.key).value);
+            if (!isNaN(v)) payload[a.key] = Math.min(10, Math.max(1, v));
+          });
+          payload.maiorNecessidade = document.getElementById("fMaiorNecessidade").value;
+          payload.pendenciasMesAnterior = document.getElementById("fPendencias").value;
+          payload.prioridadesMesSeguinte = document.getElementById("fPrioridades").value;
+          payload.atualizadoEm = new Date().toISOString();
+          try {
+            statusEl.textContent = "Salvando…";
+            await db.doc("mandala/" + mid).set(payload);
+            scores = payload;
+            drawWheel(scores);
+            renderLegend(scores);
+            document.getElementById("mediaGeral").textContent = average(scores) ?? "—";
+            statusEl.textContent = "Salvo.";
+            setTimeout(() => document.getElementById("dlgForm").close(), 500);
+          } catch (e) {
+            statusEl.textContent = "Não consegui salvar agora — tente de novo em um instante.";
+          }
+        });
+      }
+    } catch (e) {}
+
+    drawWheel(scores);
+    renderLegend(scores);
+    document.getElementById("mediaGeral").textContent = average(scores) ?? "—";
+    renderDespejo(despejoEntries);
+    renderSemana(semanaDoc);
+    renderMetas(metasDoc);
+
+    const dlg = document.getElementById("dlgForm");
+    document.getElementById("btnEditar").addEventListener("click", function () {
+      document.getElementById("formMesLabel").textContent =
+        "De 1 (vazio) a 10 (pleno) para cada área, pensando em " + MESES[now.getMonth()] + ".";
+      buildForm(scores);
+      document.getElementById("formStatus").textContent = "";
+      dlg.showModal();
+    });
+    document.getElementById("btnCancelar").addEventListener("click", function () { dlg.close(); });
+  }
+
+  main();
+})();
+</script>
