@@ -977,17 +977,24 @@ function renderMesesBar() {
   }).join("");
 }
 async function salvarRoda(btn) {
-  const vals = {}; let okAll = true;
-  FRENTES.forEach(f => {
-    const el = $("rf_" + FRENTES.indexOf(f));
+  const vals = {}; let okAll = true, okJust = true;
+  const linhas = [];
+  FRENTES.forEach((f, i) => {
+    const el = $("rf_" + i);
+    const jEl = $("rf_j_" + i);
     const v = el ? parseFloat(el.value) : NaN;
-    if (!isNaN(v)) vals[f] = Math.min(10, Math.max(1, v)); else okAll = false;
+    const just = jEl ? jEl.value.trim() : "";
+    if (!isNaN(v)) {
+      vals[f] = Math.min(10, Math.max(1, v));
+      if (just) linhas.push(`${FR[f].label}: ${vals[f]} — ${just}`); else { linhas.push(`${FR[f].label}: ${vals[f]}`); okJust = false; }
+    } else okAll = false;
   });
   const necessidade = ($("rf_necessidade") || {}).value || "";
   const prioridadeProx = (($("rf_prioridade_prox") || {}).value || "").trim();
+  const mudancasProx = (($("rf_mudancas") || {}).value || "").trim();
   const row = rodaLinhaAtual();
   btn.disabled = true;
-  const props = { ...vals, "Maior necessidade do mês": necessidade };
+  const props = { ...vals, "Maior necessidade do mês": necessidade, "Justificativas das notas": linhas.join("\n") };
   try {
     if (row) {
       const m = String(row.url || "").match(/([0-9a-f]{32})/i);
@@ -998,18 +1005,19 @@ async function salvarRoda(btn) {
       props["date:Referência:start"] = `${d[0]}-${d[1]}-01`; props["date:Referência:is_datetime"] = 0;
       await mcp.callTool(N, "notion-create-pages", { parent: { type: "data_source_id", data_source_id: RODA_DS }, pages: [{ properties: props }], allow_async: false });
     }
-    if (prioridadeProx) {
+    if (prioridadeProx || mudancasProx) {
       const nextId = addMonths(MES_ID(TODAY), 1);
       const nextRow = rodaLinhaDoMes(nextId);
+      const nextProps = {}; if (prioridadeProx) nextProps["Prioridade do mês"] = prioridadeProx; if (mudancasProx) nextProps["Mudanças propostas"] = mudancasProx;
       if (nextRow) {
         const m2 = String(nextRow.url || "").match(/([0-9a-f]{32})/i);
-        await mcp.callTool(N, "notion-update-page", { page_id: m2 ? m2[1] : nextRow.url, command: "update_properties", properties: { "Prioridade do mês": prioridadeProx }, allow_async: false });
+        await mcp.callTool(N, "notion-update-page", { page_id: m2 ? m2[1] : nextRow.url, command: "update_properties", properties: nextProps, allow_async: false });
       } else {
         const d2 = nextId.split("-");
-        await mcp.callTool(N, "notion-create-pages", { parent: { type: "data_source_id", data_source_id: RODA_DS }, pages: [{ properties: { "Mês": `${MON_CAP(+d2[1] - 1)} de ${d2[0]}`, "date:Referência:start": `${d2[0]}-${d2[1]}-01`, "date:Referência:is_datetime": 0, "Prioridade do mês": prioridadeProx } }], allow_async: false });
+        await mcp.callTool(N, "notion-create-pages", { parent: { type: "data_source_id", data_source_id: RODA_DS }, pages: [{ properties: { "Mês": `${MON_CAP(+d2[1] - 1)} de ${d2[0]}`, "date:Referência:start": `${d2[0]}-${d2[1]}-01`, "date:Referência:is_datetime": 0, ...nextProps } }], allow_async: false });
       }
     }
-    toast(okAll ? "Notas do mês salvas." : "Salvo — mas faltou nota em alguma área.");
+    toast(!okAll ? "Salvo — mas faltou nota em alguma área." : !okJust ? "Salvo — mas faltou explicar alguma nota." : "Notas do mês salvas.");
     fechar(); atualizar();
   } catch (e) { btn.disabled = false; toast("Não consegui salvar agora. Tente de novo."); }
 }
@@ -1087,10 +1095,12 @@ function renderSolta() {
     const nextId = addMonths(MES_ID(TODAY), 1);
     const nextRow = rodaLinhaDoMes(nextId);
     const dn = nextId.split("-");
-    h = `<h2 id="sTit">Notas da Roda da Vida</h2><p class="canon">${MON_CAP(+d[1] - 1)} de ${d[0]} · de 1 (vazio) a 10 (pleno)</p>` +
+    const justAnt = {}; if (row && row["Justificativas das notas"]) String(row["Justificativas das notas"]).split("\n").forEach(ln => { const mm = ln.match(/^.+?:\s*\d+\s*—\s*([\s\S]*)$/); if (mm) { const lbl = ln.split(":")[0].trim(); justAnt[lbl] = mm[1]; } });
+    h = `<h2 id="sTit">Notas da Roda da Vida</h2><p class="canon">${MON_CAP(+d[1] - 1)} de ${d[0]} · de 1 (vazio) a 10 (pleno) · diga também por quê</p>` +
       `<div class="edita" aria-label="Notas do mês">` +
-      FRENTES.map((f, i) => `<label class="nm" for="rf_${i}">${esc(FR[f].label)}<input id="rf_${i}" type="number" min="1" max="10" step="1" value="${row && typeof row[f] === "number" ? row[f] : ""}"></label>`).join("") +
+      FRENTES.map((f, i) => `<div class="nm"><label for="rf_${i}">${esc(FR[f].label)}</label><div style="display:flex;gap:8px;margin-top:4px"><input id="rf_${i}" type="number" min="1" max="10" step="1" style="width:56px;flex:none" value="${row && typeof row[f] === "number" ? row[f] : ""}"><input id="rf_j_${i}" type="text" placeholder="por quê?" style="flex:1" value="${esc(justAnt[FR[f].label] || "")}"></div></div>`).join("") +
       `<label class="nm" for="rf_necessidade">Maior necessidade do mês<textarea id="rf_necessidade" rows="2">${esc(row ? row["Maior necessidade do mês"] || "" : "")}</textarea></label>` +
+      `<label class="nm" for="rf_mudancas">O que você quer mudar para subir alguma nota? (opcional)<textarea id="rf_mudancas" rows="2" placeholder="ex: reservar mais tempo para X, retomar Y">${esc(nextRow ? nextRow["Mudanças propostas"] || "" : "")}</textarea></label>` +
       `<label class="nm" for="rf_prioridade_prox">Prioridade de ${MON_CAP(+dn[1] - 1)} (mês que vem)<textarea id="rf_prioridade_prox" rows="2" placeholder="o foco principal do próximo mês">${esc(nextRow ? nextRow["Prioridade do mês"] || "" : "")}</textarea></label>` +
       `<div class="acoes"><button type="button" class="b" id="btnSalvarRoda" ${!mcp ? "disabled" : ""}>Salvar</button></div></div>`;
   } else if (a.k === "mesRoda") {
@@ -1099,11 +1109,15 @@ function renderSolta() {
     const ehAtual = mid === MES_ID(TODAY), curMes = MES_ID(TODAY);
     const prioridade = row ? row["Prioridade do mês"] || "" : "";
     const necessidade = row ? row["Maior necessidade do mês"] || "" : "";
+    const justificativas = row ? row["Justificativas das notas"] || "" : "";
+    const mudancas = row ? row["Mudanças propostas"] || "" : "";
     h = `<h2 id="sTit">${MON_CAP(+am - 1)} de ${ay}</h2><p class="canon">${ehAtual ? "mês atual" : (mid > curMes ? "mês futuro" : "mês passado")}</p>` +
       `<div style="display:flex;align-items:center;gap:20px;flex-wrap:wrap;margin-top:12px"><svg viewBox="0 0 320 320" width="180" height="180" style="flex:none">${rodaSvgInner(row)}</svg>` +
       `<div style="flex:1;min-width:150px"><span class="et">Média do mês</span><p class="corpo" style="margin-top:4px;font-size:21px">${row ? mediaDoRow(row) : "—"}</p></div></div>` +
       `<div class="sec-s"><h3>Prioridade do mês</h3>${prioridade ? `<p class="corpo">${esc(prioridade)}</p>` : `<p class="vazio">${mid < curMes ? "Não foi definida." : "Ainda não definida."}</p>`}</div>` +
       (necessidade ? `<div class="sec-s"><h3>Maior necessidade</h3><p class="corpo">${esc(necessidade)}</p></div>` : "") +
+      (justificativas ? `<div class="sec-s"><h3>Por que essas notas</h3><p class="corpo" style="white-space:pre-wrap">${esc(justificativas)}</p></div>` : "") +
+      (mudancas ? `<div class="sec-s"><h3>Mudanças propostas</h3><p class="corpo">${esc(mudancas)}</p></div>` : "") +
       (!row ? `<p class="vazio" style="margin-top:14px">Notas da Roda da Vida ainda não lançadas para este mês.</p>` : "") +
       (ehAtual ? `<div class="acoes" style="margin-top:18px"><button type="button" class="b v" id="btnEditarMesAtual">Atualizar notas deste mês</button></div>` : "");
   }
