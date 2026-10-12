@@ -1097,6 +1097,7 @@ function renderSolta() {
     const dn = nextId.split("-");
     const justAnt = {}; if (row && row["Justificativas das notas"]) String(row["Justificativas das notas"]).split("\n").forEach(ln => { const mm = ln.match(/^.+?:\s*\d+\s*—\s*([\s\S]*)$/); if (mm) { const lbl = ln.split(":")[0].trim(); justAnt[lbl] = mm[1]; } });
     h = `<h2 id="sTit">Notas da Roda da Vida</h2><p class="canon">${MON_CAP(+d[1] - 1)} de ${d[0]} · de 1 (vazio) a 10 (pleno) · diga também por quê</p>` +
+      `<p class="vazio" style="margin:6px 0 14px">Prefere falar em vez de digitar? Mande um áudio pela Amélie no WhatsApp — ela transcreve e preenche aqui.</p>` +
       `<div class="edita" aria-label="Notas do mês">` +
       FRENTES.map((f, i) => `<div class="nm"><label for="rf_${i}">${esc(FR[f].label)}</label><div style="display:flex;gap:8px;margin-top:4px"><input id="rf_${i}" type="number" min="1" max="10" step="1" style="width:56px;flex:none" value="${row && typeof row[f] === "number" ? row[f] : ""}"><input id="rf_j_${i}" type="text" placeholder="por quê?" style="flex:1" value="${esc(justAnt[FR[f].label] || "")}"></div></div>`).join("") +
       `<label class="nm" for="rf_necessidade">Maior necessidade do mês<textarea id="rf_necessidade" rows="2">${esc(row ? row["Maior necessidade do mês"] || "" : "")}</textarea></label>` +
