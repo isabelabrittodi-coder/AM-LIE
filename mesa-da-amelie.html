@@ -259,6 +259,7 @@ button.cel:hover{background:rgba(220,203,174,.35)}
 .pt.flex{background:transparent;border:1.5px solid var(--r,var(--c))}
 .bol em{font:500 9.5px/1 var(--f-etiqueta);color:var(--tinta-2);font-style:normal}
 .cel .fer{font:500 9px/1.2 var(--f-etiqueta);letter-spacing:.12em;text-transform:uppercase;color:var(--salvia);max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.cel .ciclo{position:absolute;left:5px;bottom:3px;font-size:9px;line-height:1;color:var(--bordeaux);opacity:.85;pointer-events:none}
 .legenda{display:flex;flex-wrap:wrap;gap:8px 18px;margin-top:16px;font:12px var(--f-etiqueta);color:var(--tinta-2);align-items:center}
 .legenda span{display:inline-flex;gap:6px;align-items:center}
 .legenda .rosa{width:16px;height:12px;background:var(--rosa);display:inline-block;transform:rotate(-3deg)}
@@ -513,6 +514,7 @@ const DS_ID = "dc994d1e-5c3e-4c50-8d9b-f1ee72bfd179";
 const WORLD_PAGE = "3f20c0821fad815d9086f3d3646d17b3";
 const ITEMS_VIEW = "view://3f20c082-1fad-818e-9f85-000c80953423";
 const RODA_DS = "collection://45161cf0-7876-419c-8521-90f819a55b52";
+const CICLO_DS = "collection://bd8eb147-a2a4-4d71-b046-761065e889a0";
 const N = "Notion", G = "Google Calendar";
 const CALS = [
   { id: "primary", label: "Pessoal" },
@@ -587,7 +589,7 @@ const relLabel = s => { const n = diff(TODAY, s); if (n === 0) return "hoje"; if
 const plural = (n, a, b) => `${n} ${n === 1 ? a : b}`;
 
 /* ---------- estado ---------- */
-const S = { items: null, itemsErr: null, ev: {}, evErr: {}, mesEv: {}, mesErr: {}, mesKey: null, mesParcial: false, world: null, worldErr: null, roda: null, rodaErr: null, busy: new Set(), at: null };
+const S = { items: null, itemsErr: null, ev: {}, evErr: {}, mesEv: {}, mesErr: {}, mesKey: null, mesParcial: false, world: null, worldErr: null, roda: null, rodaErr: null, ciclo: null, busy: new Set(), at: null };
 let mcp = null, sample = null, aberto = null;
 
 /* ---------- itens do Notion ---------- */
@@ -851,6 +853,7 @@ function renderMes() {
     $("legenda").innerHTML = ""; $("leituraMes").textContent = ""; return;
   }
   const usadas = new Set(); let semCor = false;
+  const cicloPrev = S.ciclo && S.ciclo.length ? addDays(S.ciclo[S.ciclo.length - 1], 30) : null;
   let html = ["seg","ter","qua","qui","sex","sáb","dom"].map((n, k) => `<div class="dsem${k > 4 ? " fds" : ""}">${n}</div>`).join("");
   for (let d = g.gIni; d <= g.gFim; d = addDays(d, 1)) {
     const num = Number(d.slice(8));
@@ -863,7 +866,9 @@ function renderMes() {
     const desc = [`${DOW_LONG[dowOf(d)]}, ${num} de ${MON[g.m - 1]}`, x.fer.length ? x.fer.map(e => e.title).join(", ") : "",
       x.comp.length ? plural(x.comp.length, "compromisso", "compromissos") : "", x.pz.length ? plural(x.pz.length, "prazo", "prazos") : "",
       x.pl.length ? plural(x.pl.length, "tarefa planejada", "tarefas planejadas") : "", !pts.length && !x.fer.length ? "nada anotado" : ""].filter(Boolean).join(" · ");
+    const marco = (S.ciclo && S.ciclo.includes(d)) ? "★" : (d === cicloPrev ? "☆" : "");
     html += `<button type="button" class="${cls}" data-dia="${d}" aria-label="${esc(desc)}" title="${esc(desc)}"><span class="dn">${num}</span>` +
+      (marco ? `<span class="ciclo" aria-hidden="true">${marco}</span>` : "") +
       (vis.length ? `<span class="bol">${vis.map(([f, fl]) => ponto(f, fl)).join("")}${pts.length > max ? `<em>+${pts.length - max}</em>` : ""}</span>` : "") +
       (x.fer.length ? `<span class="fer">${esc(x.fer[0].title)}</span>` : "") + `</button>`;
   }
@@ -1387,9 +1392,21 @@ async function salvarAgenda(k, btn) {
   }
   catch (e) { btn.disabled = false; toast(e && (e.code === "server_unavailable" || e.code === "upstream_error") ? "A agenda não confirmou. Confira antes de tentar de novo." : "Não consegui criar o evento agora."); }
 }
+const CICLO_RE = /menstru|period[oa]\s+(chegou|veio|comecou)|ciclo\s+comecou/;
+async function registrarCiclo() {
+  if (!mcp) { $("capNota").textContent = "Sem acesso ao Notion nesta visualização."; return; }
+  $("capBtn").disabled = true; $("capNota").textContent = "Anotando…";
+  try {
+    await mcp.callTool(N, "notion-create-pages", { parent: { type: "data_source_id", data_source_id: CICLO_DS }, pages: [{ properties: { "Data": TODAY, "date:Referência:start": TODAY, "date:Referência:is_datetime": 0 } }], allow_async: false });
+    $("capTexto").value = ""; $("capNota").textContent = "Marcado. Obrigada por avisar.";
+    atualizar();
+  } catch (e) { $("capNota").textContent = "Não consegui registrar agora. Tente de novo."; }
+  $("capBtn").disabled = false;
+}
 $("capForm").addEventListener("submit", async ev => {
   ev.preventDefault();
   const text = $("capTexto").value.trim(); if (!text) { $("capTexto").focus(); return; }
+  if (CICLO_RE.test(normTxt(text))) { await registrarCiclo(); return; }
   if (!sample) { $("capNota").textContent = "Para organizar o recado, a mesa precisa do Claude, que não está liberado nesta visualização. Mande a anotação para a Amélie no chat."; return; }
   if (capCtl) capCtl.abort(); capCtl = new AbortController();
   $("capBtn").disabled = true; $("capNota").textContent = "Selado. Organizando…";
@@ -1447,6 +1464,12 @@ function startWatches() {
   unsubs.push(mcp.watchTool(N, "notion-query-data-sources", { data: { mode: "rows", data_source_url: RODA_DS, limit: 100 } }, ev => {
     if (ev.type === "data") { const p = ev.result.payload; S.roda = (p && Array.isArray(p.results)) ? p.results : []; S.rodaErr = null; }
     else { S.rodaErr = ev.error; if (isDenial(ev.error.code)) S.roda = null; }
+    renderAll();
+  }, { refetchInterval: 600000, cache: { staleTime: 120000 } }));
+  unsubs.push(mcp.watchTool(N, "notion-query-data-sources", { data: { mode: "rows", data_source_url: CICLO_DS, limit: 100 } }, ev => {
+    if (ev.type === "data") { const p = ev.result.payload; const rows = (p && Array.isArray(p.results)) ? p.results : [];
+      S.ciclo = rows.map(r => toSpDate(r["date:Referência:start"]) || r["Data"]).filter(Boolean).sort(); }
+    else if (isDenial(ev.error.code)) S.ciclo = null;
     renderAll();
   }, { refetchInterval: 600000, cache: { staleTime: 120000 } }));
   startMes();
