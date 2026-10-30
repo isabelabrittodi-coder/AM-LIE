@@ -280,23 +280,23 @@ button.cel:hover{background:rgba(220,203,174,.35)}
 .dl{display:grid;grid-template-columns:110px minmax(0,1fr);gap:0 14px;margin:0}
 .dl dt{font:500 10px/32px var(--f-etiqueta);letter-spacing:.2em;text-transform:uppercase;color:var(--tinta-2)}
 .dl dd{margin:0;font:14px/32px var(--f-datilo);min-width:0;word-break:break-word}
-.solta .corpo{font:14.5px/1.6 var(--f-etiqueta);margin-top:18px;white-space:pre-wrap}
-.solta .acoes{margin-top:22px}
-.solta .lista-s{list-style:none;margin:10px 0 0;padding:0}
-.solta .lista-s li{padding:8px 0;border-top:1px solid rgba(36,32,30,.16)}
-.solta .lista-s .btn-l{font:14px/1.35 var(--f-datilo)}
-.solta .lista-s small{display:block;font:500 10px var(--f-etiqueta);letter-spacing:.14em;text-transform:uppercase;color:var(--tinta-2);margin-top:2px}
+.solta .corpo,.pagina-menu .corpo{font:14.5px/1.6 var(--f-etiqueta);margin-top:18px;white-space:pre-wrap}
+.solta .acoes,.pagina-menu .acoes{margin-top:22px}
+.solta .lista-s,.pagina-menu .lista-s{list-style:none;margin:10px 0 0;padding:0}
+.solta .lista-s li,.pagina-menu .lista-s li{padding:8px 0;border-top:1px solid rgba(36,32,30,.16)}
+.solta .lista-s .btn-l,.pagina-menu .lista-s .btn-l{font:14px/1.35 var(--f-datilo)}
+.solta .lista-s small,.pagina-menu .lista-s small{display:block;font:500 10px var(--f-etiqueta);letter-spacing:.14em;text-transform:uppercase;color:var(--tinta-2);margin-top:2px}
 
 .solta .nota{margin-top:22px;background:var(--marfim);padding:14px 16px;box-shadow:2px 3px 0 var(--sombra)}
-.solta .nota h3,.solta .sec-s h3{font:500 10px var(--f-etiqueta);letter-spacing:.22em;text-transform:uppercase;color:var(--bordeaux);margin-bottom:6px}
-.solta .nota p,.solta .sec-s p{margin:0 0 8px;font:14.5px/1.55 var(--f-etiqueta)}
-.solta .nota ol,.solta .sec-s ul,.solta .sec-s ol{margin:4px 0 8px;padding-left:20px;font:14px/1.55 var(--f-etiqueta)}
-.solta .sec-s{margin-top:22px}
-.solta .sec-s h4{font:600 17px var(--f-titulo);margin:10px 0 4px}
-.solta .sec-s blockquote{margin:0 0 8px;padding-left:12px;border-left:2px solid var(--bordeaux)}
-.solta .edita{margin-top:22px;display:grid;gap:12px;background:var(--marfim);padding:16px;box-shadow:2px 3px 0 var(--sombra)}
-.solta .edita .nm{display:grid;gap:4px;font:500 10px var(--f-etiqueta);letter-spacing:.14em;text-transform:uppercase;color:var(--tinta-2)}
-.solta .edita .nm input,.solta .edita textarea{border:1px solid var(--linha);border-radius:2px;background:#FBF8F1;color:var(--tinta);padding:8px;font:14px var(--f-etiqueta);width:100%}
+.solta .nota h3,.solta .sec-s h3,.pagina-menu .sec-s h3{font:500 10px var(--f-etiqueta);letter-spacing:.22em;text-transform:uppercase;color:var(--bordeaux);margin-bottom:6px}
+.solta .nota p,.solta .sec-s p,.pagina-menu .sec-s p{margin:0 0 8px;font:14.5px/1.55 var(--f-etiqueta)}
+.solta .nota ol,.solta .sec-s ul,.solta .sec-s ol,.pagina-menu .sec-s ul,.pagina-menu .sec-s ol{margin:4px 0 8px;padding-left:20px;font:14px/1.55 var(--f-etiqueta)}
+.solta .sec-s,.pagina-menu .sec-s{margin-top:22px}
+.solta .sec-s h4,.pagina-menu .sec-s h4{font:600 17px var(--f-titulo);margin:10px 0 4px}
+.solta .sec-s blockquote,.pagina-menu .sec-s blockquote{margin:0 0 8px;padding-left:12px;border-left:2px solid var(--bordeaux)}
+.solta .edita,.pagina-menu .edita{margin-top:22px;display:grid;gap:12px;background:var(--marfim);padding:16px;box-shadow:2px 3px 0 var(--sombra)}
+.solta .edita .nm,.pagina-menu .edita .nm{display:grid;gap:4px;font:500 10px var(--f-etiqueta);letter-spacing:.14em;text-transform:uppercase;color:var(--tinta-2)}
+.solta .edita .nm input,.solta .edita textarea,.pagina-menu .edita .nm input,.pagina-menu .edita textarea{border:1px solid var(--linha);border-radius:2px;background:#FBF8F1;color:var(--tinta);padding:8px;font:14px var(--f-etiqueta);width:100%}
 .toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--tinta);color:var(--marfim);
   padding:10px 16px;display:flex;gap:14px;align-items:center;font:13.5px var(--f-etiqueta);z-index:40;max-width:calc(100% - 32px);border-radius:2px}
 .toast[hidden],.previa[hidden]{display:none}
@@ -340,7 +340,23 @@ button.cel:hover{background:rgba(220,203,174,.35)}
 .meses-bar{position:sticky;top:0;z-index:10;background:var(--marfim);border-bottom:1px solid var(--linha);box-shadow:0 1px 0 var(--sombra);display:flex;align-items:stretch}
 .menu-tab{flex:0 0 auto;border:0;border-right:1px solid var(--linha);background:none;cursor:pointer;padding:10px 16px 8px;display:flex;align-items:center;gap:7px;font:500 11px var(--f-etiqueta);letter-spacing:.14em;text-transform:uppercase;color:var(--bordeaux);white-space:nowrap}
 .menu-tab:hover{background:rgba(220,203,174,.35)}
+.menu-tab[aria-pressed="true"]{background:var(--bordeaux);color:var(--creme)}
 .menu-tab .ic{font-size:15px;line-height:1}
+
+/* ---- página própria do Menu da Amélie ---- */
+.pagina-menu{background:var(--mesa);min-height:60vh;padding-block:28px 60px}
+.pagina-menu-in{max-width:760px;margin:0 auto}
+.voltar-menu{border:0;background:none;cursor:pointer;font:500 11px var(--f-etiqueta);letter-spacing:.22em;text-transform:uppercase;color:var(--bordeaux);padding:8px 0;margin-bottom:10px}
+.menu-h1{font:italic 600 clamp(32px,5vw,46px)/1 var(--f-titulo);color:var(--bordeaux);margin:4px 0 2px}
+.menu-sub{font:italic 500 16px/1.4 var(--f-titulo);color:var(--tinta-2);margin:0 0 26px}
+.menu-sec{background:var(--marfim);padding:22px 24px;margin-bottom:20px;box-shadow:2px 4px 0 var(--sombra)}
+.menu-sec h3{font:500 11px var(--f-etiqueta);letter-spacing:.2em;text-transform:uppercase;color:var(--bordeaux);margin:0 0 10px}
+.menu-sec p{font:14.5px/1.6 var(--f-etiqueta);color:var(--tinta);margin:0}
+.ano-nav{display:flex;align-items:center;gap:16px;margin-top:4px}
+.ano-nav button{height:32px;width:32px;border:1px solid rgba(36,32,30,.3);background:none;cursor:pointer;color:var(--bordeaux);font-size:15px;border-radius:50%}
+.ano-nav button:hover{background:rgba(220,203,174,.4)}
+.ano-nav strong{font:600 22px var(--f-datilo);min-width:64px;text-align:center}
+.resumo-corpo{white-space:pre-wrap;font:italic 500 15px/1.55 var(--f-titulo);color:var(--tinta);margin:0 0 12px}
 .meses-bar-in{flex:1;min-width:0;max-width:1180px;margin:0 auto;display:flex;overflow-x:auto}
 .mes-btn{flex:1;min-width:58px;border:0;background:none;cursor:pointer;padding:10px 4px 8px;text-align:center;font:500 11px var(--f-etiqueta);letter-spacing:.1em;text-transform:uppercase;color:var(--tinta-2);border-bottom:2px solid transparent;white-space:nowrap}
 .mes-btn:hover{color:var(--bordeaux)}
@@ -354,7 +370,7 @@ button.cel:hover{background:rgba(220,203,174,.35)}
   <div class="meses-bar-in" id="mesesBar"></div>
 </nav>
 
-<div class="mesa">
+<div class="mesa" id="mesaView">
 
   <!-- ================= TOPO ================= -->
   <section class="topo" aria-label="Hoje na mesa">
@@ -501,6 +517,14 @@ button.cel:hover{background:rgba(220,203,174,.35)}
     <button type="button" class="et" data-ir="topo">↑ voltar ao topo da mesa</button>
   </footer>
 </div>
+
+<!-- ================= PÁGINA DO MENU DA AMÉLIE (página própria, não gaveta) ================= -->
+<section class="pagina-menu" id="paginaMenu" hidden aria-label="Menu da Amélie">
+  <div class="pagina-menu-in">
+    <button type="button" class="voltar-menu" id="btnVoltarMesa">← voltar à mesa</button>
+    <div id="menuCorpo"></div>
+  </div>
+</section>
 
 <div class="veu" id="veu" hidden>
   <aside class="solta" role="dialog" aria-modal="true" aria-labelledby="sTit">
@@ -989,7 +1013,7 @@ function renderRodaViz() {
 }
 function renderMesesBar() {
   const box = $("mesesBar"); if (!box) return;
-  const ano = TODAY.slice(0, 4), curMes = MES_ID(TODAY);
+  const ano = ANO_VISTO, curMes = MES_ID(TODAY);
   box.innerHTML = MES_ABR.map((ab, i) => {
     const mid = `${ano}-${String(i + 1).padStart(2, "0")}`;
     const row = rodaLinhaDoMes(mid);
@@ -997,7 +1021,8 @@ function renderMesesBar() {
     return `<button type="button" class="mes-btn${mid === curMes ? " atual" : ""}${tem ? " tem-dado" : ""}" data-mes-roda="${mid}">${ab}<span class="pt-mini" aria-hidden="true"></span></button>`;
   }).join("");
 }
-async function salvarRoda(btn) {
+async function salvarRoda(btn, mid) {
+  mid = mid || MES_ID(TODAY);
   const vals = {}; let okAll = true, okJust = true;
   const linhas = [];
   FRENTES.forEach((f, i) => {
@@ -1013,7 +1038,7 @@ async function salvarRoda(btn) {
   const necessidade = ($("rf_necessidade") || {}).value || "";
   const prioridadeProx = (($("rf_prioridade_prox") || {}).value || "").trim();
   const mudancasProx = (($("rf_mudancas") || {}).value || "").trim();
-  const row = rodaLinhaAtual();
+  const row = rodaLinhaDoMes(mid);
   btn.disabled = true;
   const props = { ...vals, "Maior necessidade do mês": necessidade, "Justificativas das notas": linhas.join("\n") };
   try {
@@ -1021,25 +1046,26 @@ async function salvarRoda(btn) {
       const m = String(row.url || "").match(/([0-9a-f]{32})/i);
       await mcp.callTool(N, "notion-update-page", { page_id: m ? m[1] : row.url, command: "update_properties", properties: props, allow_async: false });
     } else {
-      const d = TODAY.split("-");
-      props["Mês"] = `${MON_CAP(+d[1] - 1)} de ${d[0]}`;
-      props["date:Referência:start"] = `${d[0]}-${d[1]}-01`; props["date:Referência:is_datetime"] = 0;
+      const [ay, am] = mid.split("-");
+      props["Mês"] = `${MON_CAP(+am - 1)} de ${ay}`;
+      props["date:Referência:start"] = `${ay}-${am}-01`; props["date:Referência:is_datetime"] = 0;
       await mcp.callTool(N, "notion-create-pages", { parent: { type: "data_source_id", data_source_id: RODA_DS }, pages: [{ properties: props }], allow_async: false });
     }
     if (prioridadeProx || mudancasProx) {
-      const nextId = addMonths(MES_ID(TODAY), 1);
+      const nextId = addMonths(mid, 1);
       const nextRow = rodaLinhaDoMes(nextId);
       const nextProps = {}; if (prioridadeProx) nextProps["Prioridade do mês"] = prioridadeProx; if (mudancasProx) nextProps["Mudanças propostas"] = mudancasProx;
       if (nextRow) {
         const m2 = String(nextRow.url || "").match(/([0-9a-f]{32})/i);
         await mcp.callTool(N, "notion-update-page", { page_id: m2 ? m2[1] : nextRow.url, command: "update_properties", properties: nextProps, allow_async: false });
       } else {
-        const d2 = nextId.split("-");
-        await mcp.callTool(N, "notion-create-pages", { parent: { type: "data_source_id", data_source_id: RODA_DS }, pages: [{ properties: { "Mês": `${MON_CAP(+d2[1] - 1)} de ${d2[0]}`, "date:Referência:start": `${d2[0]}-${d2[1]}-01`, "date:Referência:is_datetime": 0, ...nextProps } }], allow_async: false });
+        const [dny, dnm] = nextId.split("-");
+        await mcp.callTool(N, "notion-create-pages", { parent: { type: "data_source_id", data_source_id: RODA_DS }, pages: [{ properties: { "Mês": `${MON_CAP(+dnm - 1)} de ${dny}`, "date:Referência:start": `${dny}-${dnm}-01`, "date:Referência:is_datetime": 0, ...nextProps } }], allow_async: false });
       }
     }
     toast(!okAll ? "Salvo — mas faltou nota em alguma área." : !okJust ? "Salvo — mas faltou explicar alguma nota." : "Notas do mês salvas.");
-    fechar(); atualizar();
+    if (!$("veu").hidden) fechar();
+    atualizar();
   } catch (e) { btn.disabled = false; toast("Não consegui salvar agora. Tente de novo."); }
 }
 function renderProjetos() {
@@ -1055,6 +1081,7 @@ function renderAll() {
   renderTopo(); renderComentario(); renderNews(); renderMes(); renderSemana(); renderPendencias(); renderFrentes(); renderRodaViz(); renderMesesBar();
   $("atualizado").textContent = S.at ? `lido às ${fmtTime.format(S.at)}` : "";
   if (aberto) renderSolta();
+  if ($("paginaMenu") && !$("paginaMenu").hidden) montarPaginaMenu();
 }
 
 /* ---------- folha solta ---------- */
@@ -1067,22 +1094,66 @@ function agentesConectadosHtml() {
   if (!AGENTES.length) return `<p class="vazio">Nenhum outro agente conectado por enquanto.</p>`;
   return `<ul class="lista-s">` + AGENTES.map(ag => `<li><span style="font:600 15px var(--f-datilo)">${esc(ag.nome)}</span><small>${esc(ag.papel)} · ${esc(ag.status)}</small>${ag.nota ? `<p class="corpo" style="margin-top:4px;font-size:13px">${esc(ag.nota)}</p>` : ""}</li>`).join("") + `</ul>`;
 }
-/* Formulário mensal da Roda da Vida — usado tanto na folha "roda" quanto dentro do Menu da Amélie. */
-function rodaFormHtml() {
-  const row = rodaLinhaAtual();
-  const d = TODAY.split("-");
-  const nextId = addMonths(MES_ID(TODAY), 1);
+/* Formulário mensal da Roda da Vida, para um mês qualquer (padrão: o mês atual) — usado na folha "roda" e na página do Menu. */
+function rodaFormHtml(mid) {
+  mid = mid || MES_ID(TODAY);
+  const row = rodaLinhaDoMes(mid);
+  const [ay, am] = mid.split("-");
+  const nextId = addMonths(mid, 1);
   const nextRow = rodaLinhaDoMes(nextId);
-  const dn = nextId.split("-");
+  const [dny, dnm] = nextId.split("-");
   const justAnt = {}; if (row && row["Justificativas das notas"]) String(row["Justificativas das notas"]).split("\n").forEach(ln => { const mm = ln.match(/^.+?:\s*\d+\s*—\s*([\s\S]*)$/); if (mm) { const lbl = ln.split(":")[0].trim(); justAnt[lbl] = mm[1]; } });
-  return `<p class="canon">${MON_CAP(+d[1] - 1)} de ${d[0]} · de 1 (vazio) a 10 (pleno) · diga também por quê</p>` +
-    `<p class="vazio" style="margin:6px 0 14px">Prefere falar em vez de digitar? Mande um áudio pela Amélie no WhatsApp — ela transcreve e preenche aqui.</p>` +
+  return `<p class="canon">${MON_CAP(+am - 1)} de ${ay} · de 1 (vazio) a 10 (pleno) · diga também por quê</p>` +
+    `<p class="vazio" style="margin:6px 0 14px">Prefere falar em vez de digitar? Mande um áudio pela Amélie no WhatsApp — sem limite de tamanho, ela transcreve e preenche aqui.</p>` +
     `<div class="edita" aria-label="Notas do mês">` +
     FRENTES.map((f, i) => `<div class="nm"><label for="rf_${i}">${esc(FR[f].label)}</label><div style="display:flex;gap:8px;margin-top:4px"><input id="rf_${i}" type="number" min="1" max="10" step="1" style="width:56px;flex:none" value="${row && typeof row[f] === "number" ? row[f] : ""}"><input id="rf_j_${i}" type="text" placeholder="por quê?" style="flex:1" value="${esc(justAnt[FR[f].label] || "")}"></div></div>`).join("") +
     `<label class="nm" for="rf_necessidade">Maior necessidade do mês<textarea id="rf_necessidade" rows="2">${esc(row ? row["Maior necessidade do mês"] || "" : "")}</textarea></label>` +
     `<label class="nm" for="rf_mudancas">O que você quer mudar para subir alguma nota? (opcional)<textarea id="rf_mudancas" rows="2" placeholder="ex: reservar mais tempo para X, retomar Y">${esc(nextRow ? nextRow["Mudanças propostas"] || "" : "")}</textarea></label>` +
-    `<label class="nm" for="rf_prioridade_prox">Prioridade de ${MON_CAP(+dn[1] - 1)} (mês que vem)<textarea id="rf_prioridade_prox" rows="2" placeholder="o foco principal do próximo mês">${esc(nextRow ? nextRow["Prioridade do mês"] || "" : "")}</textarea></label>` +
+    `<label class="nm" for="rf_prioridade_prox">Prioridade de ${MON_CAP(+dnm - 1)} (mês que vem)<textarea id="rf_prioridade_prox" rows="2" placeholder="o foco principal do próximo mês">${esc(nextRow ? nextRow["Prioridade do mês"] || "" : "")}</textarea></label>` +
     `<div class="acoes"><button type="button" class="b" id="btnSalvarRoda" ${!mcp ? "disabled" : ""}>Salvar</button></div></div>`;
+}
+/* Quantidade de itens por área da Roda da Vida com alguma data (prazo/planejada/quando) naquele mês — base para o resumo. */
+function statsDoMes(mid) {
+  const emMes = d => d && MES_ID(d) === mid;
+  const its = (S.items || []).filter(i => emMes(i.prazo) || emMes(i.plan) || emMes(i.quando));
+  const porArea = {};
+  its.forEach(i => { if (!i.frente) return; (porArea[i.frente] = porArea[i.frente] || []).push(i); });
+  const linhas = Object.entries(porArea).map(([f, l]) => ({ area: FR[f] ? FR[f].label : f, total: l.length, concluidas: l.filter(i => i.status === DONE).length }))
+    .sort((a, b) => b.total - a.total);
+  return { total: its.length, porArea: linhas };
+}
+async function gerarResumoMes(mid, btn) {
+  if (!mcp) return;
+  if (btn) btn.disabled = true;
+  try {
+    if (!sample) { toast("Resumo por IA não está disponível aqui agora."); if (btn) btn.disabled = false; return; }
+    const row = rodaLinhaDoMes(mid);
+    const st = statsDoMes(mid);
+    const [ay, am] = mid.split("-");
+    const nomeMes = `${MON_CAP(+am - 1)} de ${ay}`;
+    const notasTxt = FRENTES.filter(f => row && typeof row[f] === "number").map(f => `${FR[f].label}: ${row[f]}`).join("; ") || "nenhuma nota lançada pela Isabela neste mês";
+    const prompt = `Você é a Amélie, secretária pessoal da Isabela: calma, elegante, direta, nunca corporativa ou efusiva, nunca lista numerada. Escreva um resumo curto (4 a 6 frases, texto corrido) do mês de ${nomeMes} da Isabela, baseado só nestes dados reais — nunca invente datas, pessoas ou fatos que não estejam aqui:\n\n- Total de itens (tarefas/compromissos) com data naquele mês: ${st.total}.\n- Por área da Roda da Vida, mais movimentada primeiro: ${st.porArea.map(a => `${a.area} (${a.total} itens, ${a.concluidas} concluídas)`).join("; ") || "sem dados suficientes"}.\n- Notas que a Isabela deu à Roda da Vida naquele mês: ${notasTxt}.\n- Justificativas que ela escreveu: ${row && row["Justificativas das notas"] ? row["Justificativas das notas"] : "nenhuma"}.\n\nFale sobre onde ela mais se dedicou, onde se dedicou menos, e, se houver notas da Roda da Vida, comente como ela ficou. Se não houver notas, diga isso com naturalidade e comente só com base na movimentação de tarefas — nunca invente um motivo emocional que não esteja nos dados.`;
+    const res = await sample(prompt);
+    const texto = (res && res.text || "").trim();
+    if (!texto) { toast("Não consegui gerar o resumo agora."); if (btn) btn.disabled = false; return; }
+    if (row) {
+      const m = String(row.url || "").match(/([0-9a-f]{32})/i);
+      await mcp.callTool(N, "notion-update-page", { page_id: m ? m[1] : row.url, command: "update_properties", properties: { "Resumo do mês": texto }, allow_async: false });
+    } else {
+      await mcp.callTool(N, "notion-create-pages", { parent: { type: "data_source_id", data_source_id: RODA_DS }, pages: [{ properties: { "Mês": nomeMes, "date:Referência:start": `${ay}-${am}-01`, "date:Referência:is_datetime": 0, "Resumo do mês": texto } }], allow_async: false });
+    }
+    toast("Resumo do mês gerado.");
+    atualizar();
+  } catch (e) { toast("Não consegui gerar o resumo agora."); if (btn) btn.disabled = false; }
+}
+/* Conteúdo da página do Menu da Amélie: o que ela é, agentes conectados, histórico por ano e a avaliação do mês atual. */
+function menuHtml() {
+  const anoHoje = TODAY.slice(0, 4);
+  return `<h2 class="menu-h1">Menu da Amélie</h2><p class="menu-sub">O que ela é, a quem está ligada, e a conversa deste mês</p>` +
+    `<div class="menu-sec"><h3>O que a Amélie faz</h3><p>Amélie é a secretária pessoal da Isabela: lê o que chega pelo WhatsApp, organiza a agenda e as tarefas entre o Google Agenda e o Notion, resolve sozinha os conflitos de horário dentro de um mesmo dia, manda os briefings diários, semanais, mensais e anuais, e conduz o fechamento mensal da Roda da Vida — sempre na mesma voz calma e discreta.</p></div>` +
+    `<div class="menu-sec"><h3>Agentes conectados</h3>${agentesConectadosHtml()}</div>` +
+    `<div class="menu-sec"><h3>Histórico por ano</h3><div class="ano-nav"><button type="button" id="btnAnoAnt" aria-label="Ano anterior">‹</button><strong>${ANO_VISTO}</strong><button type="button" id="btnAnoProx" aria-label="Próximo ano">›</button></div><p style="margin-top:10px;font-size:13px;color:var(--tinta-2)">Nenhum mês é apagado quando o ano vira. Escolha o ano aqui para ver os meses dele na barra do topo — toque num mês lá para abrir a Roda da Vida, o resumo e a autoavaliação daquele mês${ANO_VISTO !== anoHoje ? "." : ", incluindo os já passados."}</p></div>` +
+    `<div class="menu-sec"><h3>Avaliação da Roda da Vida — ${MON_CAP(+TODAY.slice(5, 7) - 1)} de ${anoHoje}</h3>${rodaFormHtml(MES_ID(TODAY))}</div>`;
 }
 const dl = rows => `<dl class="dl">${rows.filter(r => r[1]).map(([k, v]) => `<dt>${k}</dt><dd>${v}</dd>`).join("")}</dl>`;
 function lista(l) { return l.length ? `<ul class="lista-s">${l.map(i => `<li>${itemBtn(i)}<small>${[i.status ? plain(i.status) : "", quandoTxt(i).replace(/<[^>]+>/g, "")].filter(Boolean).join(" · ")}</small></li>`).join("")}</ul>` : `<p class="vazio">Nada aberto aqui.</p>`; }
@@ -1136,33 +1207,31 @@ function renderSolta() {
     } else
     h = `<h2 id="sTit">${esc(a.id)}</h2><p class="canon">Projeto · ${plural(l.length, "demanda aberta", "demandas abertas")}</p>${lista(l)}`;
   } else if (a.k === "roda") {
-    h = `<h2 id="sTit">Notas da Roda da Vida</h2>` + rodaFormHtml();
-  } else if (a.k === "menu") {
-    h = `<h2 id="sTit">Menu da Amélie</h2><p class="canon">O que ela é, a quem está ligada, e a conversa deste mês</p>` +
-      `<div class="sec-s"><h3>O que a Amélie faz</h3><p class="corpo">Amélie é a secretária pessoal da Isabela: lê o que chega pelo WhatsApp, organiza a agenda e as tarefas entre o Google Agenda e o Notion, resolve sozinha os conflitos de horário dentro de um mesmo dia, manda os briefings diários, semanais, mensais e anuais, e conduz o fechamento mensal da Roda da Vida — sempre na mesma voz calma e discreta.</p></div>` +
-      `<div class="sec-s"><h3>Agentes conectados</h3>${agentesConectadosHtml()}</div>` +
-      `<div class="sec-s"><h3>Avaliação mensal da Roda da Vida</h3>${rodaFormHtml()}</div>`;
+    h = `<h2 id="sTit">Notas da Roda da Vida</h2>` + rodaFormHtml(a.id);
   } else if (a.k === "mesRoda") {
     const mid = a.id, [ay, am] = mid.split("-");
     const row = rodaLinhaDoMes(mid);
-    const ehAtual = mid === MES_ID(TODAY), curMes = MES_ID(TODAY);
+    const ehAtual = mid === MES_ID(TODAY), curMes = MES_ID(TODAY), fechado = mid < curMes;
     const prioridade = row ? row["Prioridade do mês"] || "" : "";
     const necessidade = row ? row["Maior necessidade do mês"] || "" : "";
     const justificativas = row ? row["Justificativas das notas"] || "" : "";
     const mudancas = row ? row["Mudanças propostas"] || "" : "";
+    const resumo = row ? row["Resumo do mês"] || "" : "";
     h = `<h2 id="sTit">${MON_CAP(+am - 1)} de ${ay}</h2><p class="canon">${ehAtual ? "mês atual" : (mid > curMes ? "mês futuro" : "mês passado")}</p>` +
       `<div style="display:flex;align-items:center;gap:20px;flex-wrap:wrap;margin-top:12px"><svg viewBox="0 0 320 320" width="180" height="180" style="flex:none">${rodaSvgInner(row)}</svg>` +
       `<div style="flex:1;min-width:150px"><span class="et">Média do mês</span><p class="corpo" style="margin-top:4px;font-size:21px">${row ? mediaDoRow(row) : "—"}</p></div></div>` +
-      `<div class="sec-s"><h3>Prioridade do mês</h3>${prioridade ? `<p class="corpo">${esc(prioridade)}</p>` : `<p class="vazio">${mid < curMes ? "Não foi definida." : "Ainda não definida."}</p>`}</div>` +
+      (fechado ? `<div class="sec-s"><h3>Resumo do mês</h3>${resumo ? `<p class="corpo" style="white-space:pre-wrap">${esc(resumo)}</p>` : `<p class="vazio">Ainda não gerado.</p><div class="acoes" style="margin-top:10px"><button type="button" class="b v" id="btnResumoMes" ${!mcp ? "disabled" : ""}>Gerar resumo do mês</button></div>`}</div>` : "") +
+      `<div class="sec-s"><h3>Prioridade do mês</h3>${prioridade ? `<p class="corpo">${esc(prioridade)}</p>` : `<p class="vazio">${fechado ? "Não foi definida." : "Ainda não definida."}</p>`}</div>` +
       (necessidade ? `<div class="sec-s"><h3>Maior necessidade</h3><p class="corpo">${esc(necessidade)}</p></div>` : "") +
       (justificativas ? `<div class="sec-s"><h3>Por que essas notas</h3><p class="corpo" style="white-space:pre-wrap">${esc(justificativas)}</p></div>` : "") +
       (mudancas ? `<div class="sec-s"><h3>Mudanças propostas</h3><p class="corpo">${esc(mudancas)}</p></div>` : "") +
       (!row ? `<p class="vazio" style="margin-top:14px">Notas da Roda da Vida ainda não lançadas para este mês.</p>` : "") +
-      (ehAtual ? `<div class="acoes" style="margin-top:18px"><button type="button" class="b v" id="btnEditarMesAtual">Atualizar notas deste mês</button></div>` : "");
+      (!(mid > curMes) ? `<div class="acoes" style="margin-top:18px"><button type="button" class="b v" id="btnEditarMesAtual">${ehAtual ? "Atualizar notas deste mês" : "Lançar ou corrigir a autoavaliação deste mês"}</button></div>` : "");
   }
   c.innerHTML = h;
-  if (a.k === "roda" || a.k === "menu") { const b = $("btnSalvarRoda"); if (b) b.addEventListener("click", () => salvarRoda(b)); }
-  if (a.k === "mesRoda") { const b = $("btnEditarMesAtual"); if (b) b.addEventListener("click", () => abrir("roda", "atual")); }
+  if (a.k === "roda") { const b = $("btnSalvarRoda"); if (b) b.addEventListener("click", () => salvarRoda(b, a.id)); }
+  if (a.k === "mesRoda") { const rb = $("btnResumoMes"); if (rb) rb.addEventListener("click", () => gerarResumoMes(a.id, rb)); }
+  if (a.k === "mesRoda") { const b = $("btnEditarMesAtual"); if (b) b.addEventListener("click", () => abrir("roda", a.id)); }
 }
 let voltarPara = null;
 function abrir(k, id) { if (!$("veu").hidden && aberto) {} else voltarPara = document.activeElement; aberto = { k, id }; EDIT = null; renderSolta(); $("veu").hidden = false; $("voltar").focus(); }
@@ -1170,8 +1239,18 @@ function fechar() { $("veu").hidden = true; aberto = null; EDIT = null; if (volt
 $("voltar").onclick = fechar;
 $("veu").addEventListener("click", e => { if (e.target.id === "veu") fechar(); });
 document.addEventListener("keydown", e => { if (e.key === "Escape" && !$("veu").hidden) fechar(); });
-$("btnRoda").addEventListener("click", () => abrir("roda", "atual"));
-$("btnMenuAmelie").addEventListener("click", () => abrir("menu"));
+$("btnRoda").addEventListener("click", () => abrir("roda", MES_ID(TODAY)));
+let ANO_VISTO = TODAY.slice(0, 4);
+function montarPaginaMenu() {
+  $("menuCorpo").innerHTML = menuHtml();
+  const bs = $("btnSalvarRoda"); if (bs) bs.addEventListener("click", () => salvarRoda(bs, MES_ID(TODAY)));
+  const ba = $("btnAnoAnt"); if (ba) ba.addEventListener("click", () => { ANO_VISTO = String(Number(ANO_VISTO) - 1); renderMesesBar(); montarPaginaMenu(); });
+  const bp = $("btnAnoProx"); if (bp) bp.addEventListener("click", () => { ANO_VISTO = String(Number(ANO_VISTO) + 1); renderMesesBar(); montarPaginaMenu(); });
+}
+function abrirPaginaMenu() { $("mesaView").hidden = true; $("paginaMenu").hidden = false; $("btnMenuAmelie").setAttribute("aria-pressed", "true"); montarPaginaMenu(); window.scrollTo(0, 0); }
+function fecharPaginaMenu() { $("paginaMenu").hidden = true; $("mesaView").hidden = false; $("btnMenuAmelie").setAttribute("aria-pressed", "false"); }
+$("btnMenuAmelie").addEventListener("click", () => { if ($("paginaMenu").hidden) abrirPaginaMenu(); else fecharPaginaMenu(); });
+$("btnVoltarMesa").addEventListener("click", fecharPaginaMenu);
 
 /* ---------- cliques da mesa ---------- */
 document.addEventListener("click", ev => {
