@@ -509,19 +509,34 @@ button.cel:hover{background:rgba(220,203,174,.35)}
 <script>
 (() => {
 "use strict";
-const TZ = "America/Sao_Paulo";
+/* ════════════════════════════════════════════════════════════════════
+   CONFIGURAÇÃO PESSOAL — dados de quem usa este painel, não da Amélie.
+   Tudo aqui identifica a Isabela: IDs das bases do Notion, e-mails de
+   agenda, nomes e IDs dos projetos pessoais. Para dar esta base pronta
+   a outra pessoa, troque só o conteúdo deste bloco pelos dados de quem
+   for usar — o motor da Amélie (abaixo) não depende de nada disto.
+   ════════════════════════════════════════════════════════════════════ */
 const DS_ID = "dc994d1e-5c3e-4c50-8d9b-f1ee72bfd179";
 const WORLD_PAGE = "3f20c0821fad815d9086f3d3646d17b3";
 const ITEMS_VIEW = "view://3f20c082-1fad-818e-9f85-000c80953423";
 const RODA_DS = "collection://45161cf0-7876-419c-8521-90f819a55b52";
 const CICLO_DS = "collection://bd8eb147-a2a4-4d71-b046-761065e889a0";
-const N = "Notion", G = "Google Calendar";
 const CALS = [
   { id: "primary", label: "Pessoal" },
   { id: "ajoanacoliv@gmail.com", label: "Campanha" },
   { id: "pt-br.brazilian#holiday@group.v.calendar.google.com", label: "Feriados", holiday: true }
 ];
+const PROJECTS = ["Par a Par","RAÍZES","Kelsen Explica","Be Fluent","Lista de Compras","Amélie","Bento"];
+const PROJ_IDS = { "3f20c0821fad81a3bcc0d3c3ca753135": "Kelsen Explica", "3f20c0821fad814cabfbcf0d00fb1b9a": "RAÍZES",
+  "3f40c0821fad8105a733d8c229652955": "Be Fluent", "3f40c0821fad81dc8647e05a37672340": "Lista de Compras", "3f40c0821fad81b49693c0c95983f4f5": "Amélie" };
 const FLEX = /^(Kelsen Explica|Estudar para a Faculdade|Projeto Pessoal|RAÍZES|Autocuidado|Praia)\b/;
+/* ════════════════════════════════════════════════════════════════════
+   FIM DA CONFIGURAÇÃO PESSOAL. A partir daqui é o motor da Amélie —
+   regras e taxonomia genéricas, iguais para qualquer pessoa que use
+   esta base (não citam nenhum projeto, e-mail ou ID específico).
+   ════════════════════════════════════════════════════════════════════ */
+const TZ = "America/Sao_Paulo";
+const N = "Notion", G = "Google Calendar";
 const DONE = "✅ Concluída", CANCEL = "🗑️ Cancelada", WAIT = "⏸️ Aguardando", PROG = "🔄 Em andamento";
 const TASK_LISTS = ["✅ Afazeres", "📌 Pendências"];
 /* Roda da Vida: valor gravado no Notion (campo "Roda da Vida") → rótulo, cor do quadrante e ilustração da identidade v3 */
@@ -548,9 +563,6 @@ const LISTAS = ["✅ Afazeres","📥 Inbox","📌 Pendências","🛒 Compras","�
 const PRIOS = ["P01","P02","P03","P04","P05"];
 const ENERGIAS = ["⚡ Alta","🔋 Média","🪫 Baixa"];
 const CLASSES = ["FDV","Trabalho","Carreira","Política","Projeto","Pessoal","Social","Saúde","Administrativo","Viagem"];
-const PROJECTS = ["Par a Par","RAÍZES","Kelsen Explica","Be Fluent","Lista de Compras","Amélie","Bento"];
-const PROJ_IDS = { "3f20c0821fad81a3bcc0d3c3ca753135": "Kelsen Explica", "3f20c0821fad814cabfbcf0d00fb1b9a": "RAÍZES",
-  "3f40c0821fad8105a733d8c229652955": "Be Fluent", "3f40c0821fad81dc8647e05a37672340": "Lista de Compras", "3f40c0821fad81b49693c0c95983f4f5": "Amélie" };
 const CATS_COMPRA = ["🥦 Mercado","📚 Livro","👗 Roupa","📦 Outros"];
 const DOW = ["dom","seg","ter","qua","qui","sex","sáb"];
 const DOW_LONG = ["domingo","segunda-feira","terça-feira","quarta-feira","quinta-feira","sexta-feira","sábado"];
