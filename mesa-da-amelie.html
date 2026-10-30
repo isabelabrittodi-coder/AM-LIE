@@ -549,6 +549,7 @@ const WORLD_PAGE = "3f20c0821fad815d9086f3d3646d17b3";
 const ITEMS_VIEW = "view://3f20c082-1fad-818e-9f85-000c80953423";
 const RODA_DS = "collection://45161cf0-7876-419c-8521-90f819a55b52";
 const CICLO_DS = "collection://bd8eb147-a2a4-4d71-b046-761065e889a0";
+const PERFIL_DS = "collection://32b08137-3dc6-4d82-b4f4-99c3ba25a703";
 const CALS = [
   { id: "primary", label: "Pessoal" },
   { id: "ajoanacoliv@gmail.com", label: "Campanha" },
@@ -629,7 +630,7 @@ const relLabel = s => { const n = diff(TODAY, s); if (n === 0) return "hoje"; if
 const plural = (n, a, b) => `${n} ${n === 1 ? a : b}`;
 
 /* ---------- estado ---------- */
-const S = { items: null, itemsErr: null, ev: {}, evErr: {}, mesEv: {}, mesErr: {}, mesKey: null, mesParcial: false, world: null, worldErr: null, roda: null, rodaErr: null, ciclo: null, busy: new Set(), at: null };
+const S = { items: null, itemsErr: null, ev: {}, evErr: {}, mesEv: {}, mesErr: {}, mesKey: null, mesParcial: false, world: null, worldErr: null, roda: null, rodaErr: null, ciclo: null, perfil: null, perfilErr: null, busy: new Set(), at: null };
 let mcp = null, sample = null, aberto = null;
 
 /* ---------- itens do Notion ---------- */
@@ -1146,11 +1147,41 @@ async function gerarResumoMes(mid, btn) {
     atualizar();
   } catch (e) { toast("Não consegui gerar o resumo agora."); if (btn) btn.disabled = false; }
 }
-/* Conteúdo da página do Menu da Amélie: o que ela é, agentes conectados, histórico por ano e a avaliação do mês atual. */
+/* Conteúdo da página do Menu da Amélie: o que ela é, personalização, agentes conectados, histórico por ano e a avaliação do mês atual. */
+function perfilHtml() {
+  const p = S.perfil || {};
+  return `<p style="margin:0 0 14px;font-size:13px;color:var(--tinta-2)">Quem você é, pra Amélie saber com quem está falando. Isto é informação sua — fica só no Notion, nunca no código deste painel.</p>` +
+    `<div class="edita" aria-label="Personalização">` +
+    `<label class="nm" for="pf_nome">Nome<input id="pf_nome" type="text" value="${esc(p["Nome"] || "")}"></label>` +
+    `<label class="nm" for="pf_profissao">Profissão<input id="pf_profissao" type="text" value="${esc(p["Profissão"] || "")}"></label>` +
+    `<label class="nm" for="pf_sobre">O que a Amélie deve saber sobre você<textarea id="pf_sobre" rows="3" placeholder="rotina, prioridades, particularidades — o que mais importa pra ela entender seu dia a dia">${esc(p["O que a Amélie deve saber"] || "")}</textarea></label>` +
+    `<div class="acoes"><button type="button" class="b" id="btnSalvarPerfil" ${!mcp ? "disabled" : ""}>Salvar</button></div></div>`;
+}
+async function salvarPerfil(btn) {
+  if (!mcp) return;
+  btn.disabled = true;
+  const props = {
+    "Nome": (($("pf_nome") || {}).value || "").trim(),
+    "Profissão": (($("pf_profissao") || {}).value || "").trim(),
+    "O que a Amélie deve saber": (($("pf_sobre") || {}).value || "").trim()
+  };
+  try {
+    const row = S.perfil;
+    if (row) {
+      const m = String(row.url || "").match(/([0-9a-f]{32})/i);
+      await mcp.callTool(N, "notion-update-page", { page_id: m ? m[1] : row.url, command: "update_properties", properties: props, allow_async: false });
+    } else {
+      await mcp.callTool(N, "notion-create-pages", { parent: { type: "data_source_id", data_source_id: PERFIL_DS }, pages: [{ properties: { "Campo": "Perfil", ...props } }], allow_async: false });
+    }
+    toast("Perfil salvo.");
+    atualizar();
+  } catch (e) { btn.disabled = false; toast("Não consegui salvar o perfil agora."); }
+}
 function menuHtml() {
   const anoHoje = TODAY.slice(0, 4);
-  return `<h2 class="menu-h1">Menu da Amélie</h2><p class="menu-sub">O que ela é, a quem está ligada, e a conversa deste mês</p>` +
+  return `<h2 class="menu-h1">Menu da Amélie</h2><p class="menu-sub">O que ela é, quem você é pra ela, a quem está ligada, e a conversa deste mês</p>` +
     `<div class="menu-sec"><h3>O que a Amélie faz</h3><p>Amélie é a secretária pessoal da Isabela: lê o que chega pelo WhatsApp, organiza a agenda e as tarefas entre o Google Agenda e o Notion, resolve sozinha os conflitos de horário dentro de um mesmo dia, manda os briefings diários, semanais, mensais e anuais, e conduz o fechamento mensal da Roda da Vida — sempre na mesma voz calma e discreta.</p></div>` +
+    `<div class="menu-sec"><h3>Personalização</h3>${perfilHtml()}</div>` +
     `<div class="menu-sec"><h3>Agentes conectados</h3>${agentesConectadosHtml()}</div>` +
     `<div class="menu-sec"><h3>Histórico por ano</h3><div class="ano-nav"><button type="button" id="btnAnoAnt" aria-label="Ano anterior">‹</button><strong>${ANO_VISTO}</strong><button type="button" id="btnAnoProx" aria-label="Próximo ano">›</button></div><p style="margin-top:10px;font-size:13px;color:var(--tinta-2)">Nenhum mês é apagado quando o ano vira. Escolha o ano aqui para ver os meses dele na barra do topo — toque num mês lá para abrir a Roda da Vida, o resumo e a autoavaliação daquele mês${ANO_VISTO !== anoHoje ? "." : ", incluindo os já passados."}</p></div>` +
     `<div class="menu-sec"><h3>Avaliação da Roda da Vida — ${MON_CAP(+TODAY.slice(5, 7) - 1)} de ${anoHoje}</h3>${rodaFormHtml(MES_ID(TODAY))}</div>`;
@@ -1244,6 +1275,7 @@ let ANO_VISTO = TODAY.slice(0, 4);
 function montarPaginaMenu() {
   $("menuCorpo").innerHTML = menuHtml();
   const bs = $("btnSalvarRoda"); if (bs) bs.addEventListener("click", () => salvarRoda(bs, MES_ID(TODAY)));
+  const bpf = $("btnSalvarPerfil"); if (bpf) bpf.addEventListener("click", () => salvarPerfil(bpf));
   const ba = $("btnAnoAnt"); if (ba) ba.addEventListener("click", () => { ANO_VISTO = String(Number(ANO_VISTO) - 1); renderMesesBar(); montarPaginaMenu(); });
   const bp = $("btnAnoProx"); if (bp) bp.addEventListener("click", () => { ANO_VISTO = String(Number(ANO_VISTO) + 1); renderMesesBar(); montarPaginaMenu(); });
 }
@@ -1583,6 +1615,11 @@ function startWatches() {
     if (ev.type === "data") { const p = ev.result.payload; const rows = (p && Array.isArray(p.results)) ? p.results : [];
       S.ciclo = rows.map(r => toSpDate(r["date:Referência:start"]) || r["Data"]).filter(Boolean).sort(); }
     else if (isDenial(ev.error.code)) S.ciclo = null;
+    renderAll();
+  }, { refetchInterval: 600000, cache: { staleTime: 120000 } }));
+  unsubs.push(mcp.watchTool(N, "notion-query-data-sources", { data: { mode: "rows", data_source_url: PERFIL_DS, limit: 1 } }, ev => {
+    if (ev.type === "data") { const p = ev.result.payload; S.perfil = (p && Array.isArray(p.results) && p.results[0]) || null; S.perfilErr = null; }
+    else { S.perfilErr = ev.error; if (isDenial(ev.error.code)) S.perfil = null; }
     renderAll();
   }, { refetchInterval: 600000, cache: { staleTime: 120000 } }));
   startMes();
