@@ -337,8 +337,11 @@ button.cel:hover{background:rgba(220,203,174,.35)}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 
 /* ============ barra dos meses ============ */
-.meses-bar{position:sticky;top:0;z-index:10;background:var(--marfim);border-bottom:1px solid var(--linha);box-shadow:0 1px 0 var(--sombra)}
-.meses-bar-in{max-width:1180px;margin:0 auto;display:flex;overflow-x:auto}
+.meses-bar{position:sticky;top:0;z-index:10;background:var(--marfim);border-bottom:1px solid var(--linha);box-shadow:0 1px 0 var(--sombra);display:flex;align-items:stretch}
+.menu-tab{flex:0 0 auto;border:0;border-right:1px solid var(--linha);background:none;cursor:pointer;padding:10px 16px 8px;display:flex;align-items:center;gap:7px;font:500 11px var(--f-etiqueta);letter-spacing:.14em;text-transform:uppercase;color:var(--bordeaux);white-space:nowrap}
+.menu-tab:hover{background:rgba(220,203,174,.35)}
+.menu-tab .ic{font-size:15px;line-height:1}
+.meses-bar-in{flex:1;min-width:0;max-width:1180px;margin:0 auto;display:flex;overflow-x:auto}
 .mes-btn{flex:1;min-width:58px;border:0;background:none;cursor:pointer;padding:10px 4px 8px;text-align:center;font:500 11px var(--f-etiqueta);letter-spacing:.1em;text-transform:uppercase;color:var(--tinta-2);border-bottom:2px solid transparent;white-space:nowrap}
 .mes-btn:hover{color:var(--bordeaux)}
 .mes-btn.atual{color:var(--bordeaux);border-bottom-color:var(--bordeaux);font-weight:600}
@@ -346,7 +349,8 @@ button.cel:hover{background:rgba(220,203,174,.35)}
 .mes-btn.tem-dado .pt-mini{background:var(--salvia)}
 </style>
 
-<nav class="meses-bar" aria-label="Meses do ano">
+<nav class="meses-bar" aria-label="Amélie">
+  <button type="button" class="menu-tab" id="btnMenuAmelie" aria-label="Abrir menu da Amélie"><span class="ic" aria-hidden="true">☰</span>Menu</button>
   <div class="meses-bar-in" id="mesesBar"></div>
 </nav>
 
@@ -1055,6 +1059,31 @@ function renderAll() {
 
 /* ---------- folha solta ---------- */
 function findItem(k) { return (S.items || []).find(i => (i.id || i.name) === k); }
+/* Agentes ligados à Amélie — hoje só o Bento (consulta, só leitura); novos agentes entram só nesta lista. */
+const AGENTES = [
+  { nome: "Bento", papel: "agente financeiro", status: "conectado · só consulta", nota: "Amélie só pergunta ao Bento (orçamento, gastos, disponibilidade) e repete o número que ele devolve — nunca registra nem edita nada das bases dele." }
+];
+function agentesConectadosHtml() {
+  if (!AGENTES.length) return `<p class="vazio">Nenhum outro agente conectado por enquanto.</p>`;
+  return `<ul class="lista-s">` + AGENTES.map(ag => `<li><span style="font:600 15px var(--f-datilo)">${esc(ag.nome)}</span><small>${esc(ag.papel)} · ${esc(ag.status)}</small>${ag.nota ? `<p class="corpo" style="margin-top:4px;font-size:13px">${esc(ag.nota)}</p>` : ""}</li>`).join("") + `</ul>`;
+}
+/* Formulário mensal da Roda da Vida — usado tanto na folha "roda" quanto dentro do Menu da Amélie. */
+function rodaFormHtml() {
+  const row = rodaLinhaAtual();
+  const d = TODAY.split("-");
+  const nextId = addMonths(MES_ID(TODAY), 1);
+  const nextRow = rodaLinhaDoMes(nextId);
+  const dn = nextId.split("-");
+  const justAnt = {}; if (row && row["Justificativas das notas"]) String(row["Justificativas das notas"]).split("\n").forEach(ln => { const mm = ln.match(/^.+?:\s*\d+\s*—\s*([\s\S]*)$/); if (mm) { const lbl = ln.split(":")[0].trim(); justAnt[lbl] = mm[1]; } });
+  return `<p class="canon">${MON_CAP(+d[1] - 1)} de ${d[0]} · de 1 (vazio) a 10 (pleno) · diga também por quê</p>` +
+    `<p class="vazio" style="margin:6px 0 14px">Prefere falar em vez de digitar? Mande um áudio pela Amélie no WhatsApp — ela transcreve e preenche aqui.</p>` +
+    `<div class="edita" aria-label="Notas do mês">` +
+    FRENTES.map((f, i) => `<div class="nm"><label for="rf_${i}">${esc(FR[f].label)}</label><div style="display:flex;gap:8px;margin-top:4px"><input id="rf_${i}" type="number" min="1" max="10" step="1" style="width:56px;flex:none" value="${row && typeof row[f] === "number" ? row[f] : ""}"><input id="rf_j_${i}" type="text" placeholder="por quê?" style="flex:1" value="${esc(justAnt[FR[f].label] || "")}"></div></div>`).join("") +
+    `<label class="nm" for="rf_necessidade">Maior necessidade do mês<textarea id="rf_necessidade" rows="2">${esc(row ? row["Maior necessidade do mês"] || "" : "")}</textarea></label>` +
+    `<label class="nm" for="rf_mudancas">O que você quer mudar para subir alguma nota? (opcional)<textarea id="rf_mudancas" rows="2" placeholder="ex: reservar mais tempo para X, retomar Y">${esc(nextRow ? nextRow["Mudanças propostas"] || "" : "")}</textarea></label>` +
+    `<label class="nm" for="rf_prioridade_prox">Prioridade de ${MON_CAP(+dn[1] - 1)} (mês que vem)<textarea id="rf_prioridade_prox" rows="2" placeholder="o foco principal do próximo mês">${esc(nextRow ? nextRow["Prioridade do mês"] || "" : "")}</textarea></label>` +
+    `<div class="acoes"><button type="button" class="b" id="btnSalvarRoda" ${!mcp ? "disabled" : ""}>Salvar</button></div></div>`;
+}
 const dl = rows => `<dl class="dl">${rows.filter(r => r[1]).map(([k, v]) => `<dt>${k}</dt><dd>${v}</dd>`).join("")}</dl>`;
 function lista(l) { return l.length ? `<ul class="lista-s">${l.map(i => `<li>${itemBtn(i)}<small>${[i.status ? plain(i.status) : "", quandoTxt(i).replace(/<[^>]+>/g, "")].filter(Boolean).join(" · ")}</small></li>`).join("")}</ul>` : `<p class="vazio">Nada aberto aqui.</p>`; }
 function renderSolta() {
@@ -1107,20 +1136,12 @@ function renderSolta() {
     } else
     h = `<h2 id="sTit">${esc(a.id)}</h2><p class="canon">Projeto · ${plural(l.length, "demanda aberta", "demandas abertas")}</p>${lista(l)}`;
   } else if (a.k === "roda") {
-    const row = rodaLinhaAtual();
-    const d = TODAY.split("-");
-    const nextId = addMonths(MES_ID(TODAY), 1);
-    const nextRow = rodaLinhaDoMes(nextId);
-    const dn = nextId.split("-");
-    const justAnt = {}; if (row && row["Justificativas das notas"]) String(row["Justificativas das notas"]).split("\n").forEach(ln => { const mm = ln.match(/^.+?:\s*\d+\s*—\s*([\s\S]*)$/); if (mm) { const lbl = ln.split(":")[0].trim(); justAnt[lbl] = mm[1]; } });
-    h = `<h2 id="sTit">Notas da Roda da Vida</h2><p class="canon">${MON_CAP(+d[1] - 1)} de ${d[0]} · de 1 (vazio) a 10 (pleno) · diga também por quê</p>` +
-      `<p class="vazio" style="margin:6px 0 14px">Prefere falar em vez de digitar? Mande um áudio pela Amélie no WhatsApp — ela transcreve e preenche aqui.</p>` +
-      `<div class="edita" aria-label="Notas do mês">` +
-      FRENTES.map((f, i) => `<div class="nm"><label for="rf_${i}">${esc(FR[f].label)}</label><div style="display:flex;gap:8px;margin-top:4px"><input id="rf_${i}" type="number" min="1" max="10" step="1" style="width:56px;flex:none" value="${row && typeof row[f] === "number" ? row[f] : ""}"><input id="rf_j_${i}" type="text" placeholder="por quê?" style="flex:1" value="${esc(justAnt[FR[f].label] || "")}"></div></div>`).join("") +
-      `<label class="nm" for="rf_necessidade">Maior necessidade do mês<textarea id="rf_necessidade" rows="2">${esc(row ? row["Maior necessidade do mês"] || "" : "")}</textarea></label>` +
-      `<label class="nm" for="rf_mudancas">O que você quer mudar para subir alguma nota? (opcional)<textarea id="rf_mudancas" rows="2" placeholder="ex: reservar mais tempo para X, retomar Y">${esc(nextRow ? nextRow["Mudanças propostas"] || "" : "")}</textarea></label>` +
-      `<label class="nm" for="rf_prioridade_prox">Prioridade de ${MON_CAP(+dn[1] - 1)} (mês que vem)<textarea id="rf_prioridade_prox" rows="2" placeholder="o foco principal do próximo mês">${esc(nextRow ? nextRow["Prioridade do mês"] || "" : "")}</textarea></label>` +
-      `<div class="acoes"><button type="button" class="b" id="btnSalvarRoda" ${!mcp ? "disabled" : ""}>Salvar</button></div></div>`;
+    h = `<h2 id="sTit">Notas da Roda da Vida</h2>` + rodaFormHtml();
+  } else if (a.k === "menu") {
+    h = `<h2 id="sTit">Menu da Amélie</h2><p class="canon">O que ela é, a quem está ligada, e a conversa deste mês</p>` +
+      `<div class="sec-s"><h3>O que a Amélie faz</h3><p class="corpo">Amélie é a secretária pessoal da Isabela: lê o que chega pelo WhatsApp, organiza a agenda e as tarefas entre o Google Agenda e o Notion, resolve sozinha os conflitos de horário dentro de um mesmo dia, manda os briefings diários, semanais, mensais e anuais, e conduz o fechamento mensal da Roda da Vida — sempre na mesma voz calma e discreta.</p></div>` +
+      `<div class="sec-s"><h3>Agentes conectados</h3>${agentesConectadosHtml()}</div>` +
+      `<div class="sec-s"><h3>Avaliação mensal da Roda da Vida</h3>${rodaFormHtml()}</div>`;
   } else if (a.k === "mesRoda") {
     const mid = a.id, [ay, am] = mid.split("-");
     const row = rodaLinhaDoMes(mid);
@@ -1140,7 +1161,7 @@ function renderSolta() {
       (ehAtual ? `<div class="acoes" style="margin-top:18px"><button type="button" class="b v" id="btnEditarMesAtual">Atualizar notas deste mês</button></div>` : "");
   }
   c.innerHTML = h;
-  if (a.k === "roda") { const b = $("btnSalvarRoda"); if (b) b.addEventListener("click", () => salvarRoda(b)); }
+  if (a.k === "roda" || a.k === "menu") { const b = $("btnSalvarRoda"); if (b) b.addEventListener("click", () => salvarRoda(b)); }
   if (a.k === "mesRoda") { const b = $("btnEditarMesAtual"); if (b) b.addEventListener("click", () => abrir("roda", "atual")); }
 }
 let voltarPara = null;
@@ -1150,6 +1171,7 @@ $("voltar").onclick = fechar;
 $("veu").addEventListener("click", e => { if (e.target.id === "veu") fechar(); });
 document.addEventListener("keydown", e => { if (e.key === "Escape" && !$("veu").hidden) fechar(); });
 $("btnRoda").addEventListener("click", () => abrir("roda", "atual"));
+$("btnMenuAmelie").addEventListener("click", () => abrir("menu"));
 
 /* ---------- cliques da mesa ---------- */
 document.addEventListener("click", ev => {
