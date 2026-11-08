@@ -1449,7 +1449,7 @@ function capturePrompt(text) {
 Hoje é ${DOW_LONG[dowOf(TODAY)]}, ${TODAY}. Próximos dias: ${prox}. Fuso: America/Sao_Paulo.
 
 - nome: o título da tarefa, no formato [Verbo no infinitivo] + [objeto ou atividade específica], numa frase natural e direta (ex.: "Enviar candidatura à OCDE", "Cancelar sessão de terapia", "Decidir sobre aula de samba"). Para compromisso recorrente, pode ser só o nome do evento ("Estágio", "Aula de Inglês"). Nunca use barras verticais, travessões ou qualquer separador para embutir classificação, data, hora, prioridade ou status — essas informações já vão em campos próprios.
-- classificacao: uma de ${CLASSES.join(", ")}; null quando o nome já identifica (ex.: Par a Par, RAÍZES, Kelsen Explica, Amélie, Bento).
+- classificacao: uma de ${CLASSES.join(", ")}; null quando o nome já identifica um dos projetos conhecidos (${PROJECTS.join(", ")}).
 
 Regras:
 - Nunca invente data, horário, prazo, prioridade, pessoa, projeto ou local. Campo sem informação = null.
