@@ -370,6 +370,28 @@ button.cel:hover{background:rgba(220,203,174,.35)}
   <div class="meses-bar-in" id="mesesBar"></div>
 </nav>
 
+<!-- ================= CONFIGURAÇÃO INICIAL (só aparece sem config salva neste navegador) ================= -->
+<section class="pagina-menu" id="telaConfig" hidden aria-label="Configuração">
+  <div class="pagina-menu-in">
+    <h2 class="menu-h1">Configuração</h2>
+    <p class="menu-sub">Antes de começar, a Mesa da Amélie precisa saber onde ficam suas próprias bases no Notion e sua agenda. Isso fica guardado só neste navegador — nunca é enviado a mim ou a qualquer servidor.</p>
+    <div class="menu-sec">
+      <div class="edita" aria-label="Configuração pessoal">
+        <label class="nm" for="cf_ds">ID da base de tarefas ("Amélia — Controle — Geral")<input id="cf_ds" type="text" placeholder="collection://... ou o ID da base, da URL do Notion"></label>
+        <label class="nm" for="cf_roda">ID da base "Roda da Vida — Mensal"<input id="cf_roda" type="text" placeholder="collection://..."></label>
+        <label class="nm" for="cf_view">ID da visualização de itens (opcional)<input id="cf_view" type="text" placeholder="view://..."></label>
+        <label class="nm" for="cf_world">ID da página do briefing de notícias (opcional)<input id="cf_world" type="text" placeholder="ID da página"></label>
+        <label class="nm" for="cf_ciclo">ID da base "Ciclo" (opcional)<input id="cf_ciclo" type="text" placeholder="collection://..."></label>
+        <label class="nm" for="cf_perfil">ID da base "Perfil" (opcional)<input id="cf_perfil" type="text" placeholder="collection://..."></label>
+        <label class="nm" for="cf_cal">Identificador da sua agenda principal no Google<input id="cf_cal" type="text" placeholder="primary (ou o e-mail de outra agenda)" value="primary"></label>
+        <label class="nm" for="cf_json">Configuração avançada — cole aqui pra restaurar tudo de uma vez (opcional, substitui os campos acima)<textarea id="cf_json" rows="4" placeholder='{"DS_ID":"...","CALS":[...],"PROJECTS":[...],"PROJ_IDS":{...},"FLEX_PROJETOS":[...]}'></textarea></label>
+        <div class="acoes"><button type="button" class="b" id="btnSalvarConfig">Salvar e começar</button><button type="button" class="b v" id="btnCancelarConfig" hidden>Cancelar</button></div>
+      </div>
+      <p class="vazio" style="margin-top:10px">O ID de uma base do Notion é o trecho de letras e números na URL dela, depois do nome do espaço de trabalho.</p>
+    </div>
+  </div>
+</section>
+
 <div class="mesa" id="mesaView">
 
   <!-- ================= TOPO ================= -->
@@ -539,26 +561,61 @@ button.cel:hover{background:rgba(220,203,174,.35)}
 "use strict";
 /* ════════════════════════════════════════════════════════════════════
    CONFIGURAÇÃO PESSOAL — dados de quem usa este painel, não da Amélie.
-   Tudo aqui identifica a Isabela: IDs das bases do Notion, e-mails de
-   agenda, nomes e IDs dos projetos pessoais. Para dar esta base pronta
-   a outra pessoa, troque só o conteúdo deste bloco pelos dados de quem
-   for usar — o motor da Amélie (abaixo) não depende de nada disto.
+   Nada disso é mais escrito neste arquivo: é lido do navegador de quem
+   abre o painel (localStorage), preenchido uma vez numa tela própria.
+   Isso é o que permite dar esta base pronta a outra pessoa sem levar
+   nenhum dado seu — o arquivo nunca carrega um ID ou e-mail real.
    ════════════════════════════════════════════════════════════════════ */
-const DS_ID = "dc994d1e-5c3e-4c50-8d9b-f1ee72bfd179";
-const WORLD_PAGE = "3f20c0821fad815d9086f3d3646d17b3";
-const ITEMS_VIEW = "view://3f20c082-1fad-818e-9f85-000c80953423";
-const RODA_DS = "collection://45161cf0-7876-419c-8521-90f819a55b52";
-const CICLO_DS = "collection://bd8eb147-a2a4-4d71-b046-761065e889a0";
-const PERFIL_DS = "collection://32b08137-3dc6-4d82-b4f4-99c3ba25a703";
-const CALS = [
-  { id: "primary", label: "Pessoal" },
-  { id: "ajoanacoliv@gmail.com", label: "Campanha" },
-  { id: "pt-br.brazilian#holiday@group.v.calendar.google.com", label: "Feriados", holiday: true }
-];
-const PROJECTS = ["Par a Par","RAÍZES","Kelsen Explica","Be Fluent","Lista de Compras","Amélie","Bento"];
-const PROJ_IDS = { "3f20c0821fad81a3bcc0d3c3ca753135": "Kelsen Explica", "3f20c0821fad814cabfbcf0d00fb1b9a": "RAÍZES",
-  "3f40c0821fad8105a733d8c229652955": "Be Fluent", "3f40c0821fad81dc8647e05a37672340": "Lista de Compras", "3f40c0821fad81b49693c0c95983f4f5": "Amélie" };
-const FLEX = /^(Kelsen Explica|Estudar para a Faculdade|Projeto Pessoal|RAÍZES|Autocuidado|Praia)\b/;
+const CONFIG_PADRAO = {
+  DS_ID: "", WORLD_PAGE: "", ITEMS_VIEW: "", RODA_DS: "", CICLO_DS: "", PERFIL_DS: "",
+  CALS: [{ id: "primary", label: "Pessoal" }], PROJECTS: [], PROJ_IDS: {}, FLEX_PROJETOS: []
+};
+function carregarConfig() {
+  try { const s = localStorage.getItem("amelie_config"); if (s) return { ...CONFIG_PADRAO, ...JSON.parse(s) }; } catch {}
+  return null;
+}
+function salvarConfig(cfg) { try { localStorage.setItem("amelie_config", JSON.stringify(cfg)); } catch {} }
+const CFG = carregarConfig() || CONFIG_PADRAO;
+const DS_ID = CFG.DS_ID, WORLD_PAGE = CFG.WORLD_PAGE, ITEMS_VIEW = CFG.ITEMS_VIEW, RODA_DS = CFG.RODA_DS,
+  CICLO_DS = CFG.CICLO_DS, PERFIL_DS = CFG.PERFIL_DS, CALS = CFG.CALS, PROJECTS = CFG.PROJECTS, PROJ_IDS = CFG.PROJ_IDS;
+const FLEX = (CFG.FLEX_PROJETOS && CFG.FLEX_PROJETOS.length)
+  ? new RegExp("^(" + CFG.FLEX_PROJETOS.map(s => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")).join("|") + ")\\b")
+  : /^(?!)/;
+function mostrarTelaConfig() {
+  const mv = document.getElementById("mesaView"); if (mv) mv.hidden = true;
+  const bar = document.querySelector(".meses-bar"); if (bar) bar.hidden = true;
+  const pm = document.getElementById("paginaMenu"); if (pm) pm.hidden = true;
+  document.getElementById("telaConfig").hidden = false;
+  const btnCancelar = document.getElementById("btnCancelarConfig");
+  if (CFG.DS_ID && CFG.RODA_DS) {
+    btnCancelar.hidden = false;
+    btnCancelar.onclick = () => { document.getElementById("telaConfig").hidden = true; if (mv) mv.hidden = false; if (bar) bar.hidden = false; };
+  } else btnCancelar.hidden = true;
+  const set = (id, val) => { const el = document.getElementById(id); if (el) el.value = val || ""; };
+  set("cf_ds", CFG.DS_ID); set("cf_world", CFG.WORLD_PAGE); set("cf_view", CFG.ITEMS_VIEW);
+  set("cf_roda", CFG.RODA_DS); set("cf_ciclo", CFG.CICLO_DS); set("cf_perfil", CFG.PERFIL_DS);
+  set("cf_cal", (CFG.CALS && CFG.CALS[0] && CFG.CALS[0].id) || "primary");
+  document.getElementById("btnSalvarConfig").onclick = () => {
+    const v = id => (document.getElementById(id).value || "").trim();
+    const jsonTxt = v("cf_json");
+    if (jsonTxt) {
+      try {
+        const colado = JSON.parse(jsonTxt);
+        if (!colado.DS_ID || !colado.RODA_DS) { alert("O JSON precisa ter pelo menos DS_ID e RODA_DS."); return; }
+        salvarConfig({ ...CONFIG_PADRAO, ...colado });
+        location.reload();
+        return;
+      } catch (e) { alert("Esse JSON não é válido — confira as vírgulas e aspas."); return; }
+    }
+    const dsId = v("cf_ds"), rodaId = v("cf_roda");
+    if (!dsId || !rodaId) { alert("Preencha pelo menos a base de tarefas e a Roda da Vida."); return; }
+    salvarConfig({ ...CONFIG_PADRAO, DS_ID: dsId, WORLD_PAGE: v("cf_world"), ITEMS_VIEW: v("cf_view"),
+      RODA_DS: rodaId, CICLO_DS: v("cf_ciclo"), PERFIL_DS: v("cf_perfil"),
+      CALS: [{ id: v("cf_cal") || "primary", label: "Pessoal" }] });
+    location.reload();
+  };
+}
+if (!DS_ID || !RODA_DS) { mostrarTelaConfig(); return; }
 /* ════════════════════════════════════════════════════════════════════
    FIM DA CONFIGURAÇÃO PESSOAL. A partir daqui é o motor da Amélie —
    regras e taxonomia genéricas, iguais para qualquer pessoa que use
@@ -735,7 +792,9 @@ const DICT = {
     muitos_recados: "Muitos recados seguidos. Tente de novo em instantes.", nao_consegui_organizar: "Não consegui organizar esse recado. Tente escrever de outro jeito.",
     vale_confirmar_tpl: "Vale confirmar: %s",
 
-    classificacao_label: "Classificação", inicio_label: "Início", fim_label: "Fim"
+    classificacao_label: "Classificação", inicio_label: "Início", fim_label: "Fim",
+
+    menu_h_config: "Configuração desta instalação", menu_desc_config: "Os IDs do Notion e da sua agenda ficam guardados só neste navegador.", btn_editar_config: "Ver/editar configuração"
   },
   en: {
     menu_label: "Menu", menu_abrir_aria: "Open Amélie's menu",
@@ -894,7 +953,9 @@ const DICT = {
     muitos_recados: "Too many notes in a row. Try again in a moment.", nao_consegui_organizar: "Couldn't organise that note. Try writing it a different way.",
     vale_confirmar_tpl: "Worth confirming: %s",
 
-    classificacao_label: "Classification", inicio_label: "Start", fim_label: "End"
+    classificacao_label: "Classification", inicio_label: "Start", fim_label: "End",
+
+    menu_h_config: "This installation's configuration", menu_desc_config: "Your Notion and calendar IDs are kept only in this browser.", btn_editar_config: "View/edit configuration"
   }
 };
 const t = k => { const v = (DICT[LANG] && DICT[LANG][k] !== undefined) ? DICT[LANG][k] : DICT.pt[k]; return v !== undefined ? v : k; };
@@ -1578,7 +1639,8 @@ function menuHtml() {
     `<div class="menu-sec"><h3>${t("menu_h_personalizacao")}</h3>${perfilHtml()}</div>` +
     `<div class="menu-sec"><h3>${t("menu_h_agentes")}</h3>${agentesConectadosHtml()}</div>` +
     `<div class="menu-sec"><h3>${t("menu_h_historico")}</h3><div class="ano-nav"><button type="button" id="btnAnoAnt" aria-label="${esc(t('ano_ant_aria'))}">‹</button><strong>${ANO_VISTO}</strong><button type="button" id="btnAnoProx" aria-label="${esc(t('ano_prox_aria'))}">›</button></div><p style="margin-top:10px;font-size:13px;color:var(--tinta-2)">${t("historico_desc_tpl")}${ANO_VISTO !== anoHoje ? t("historico_desc_suf_outro") : t("historico_desc_suf_atual")}</p></div>` +
-    `<div class="menu-sec"><h3>${tf("menu_h_avaliacao_tpl", MON_CAP(+TODAY.slice(5, 7) - 1), anoHoje)}</h3>${rodaFormHtml(MES_ID(TODAY))}</div>`;
+    `<div class="menu-sec"><h3>${tf("menu_h_avaliacao_tpl", MON_CAP(+TODAY.slice(5, 7) - 1), anoHoje)}</h3>${rodaFormHtml(MES_ID(TODAY))}</div>` +
+    `<div class="menu-sec"><h3>${t("menu_h_config")}</h3><p>${t("menu_desc_config")}</p><div class="acoes" style="margin-top:10px"><button type="button" class="b v" id="btnEditarConfig">${t("btn_editar_config")}</button></div></div>`;
 }
 const dl = rows => `<dl class="dl">${rows.filter(r => r[1]).map(([k, v]) => `<dt>${k}</dt><dd>${v}</dd>`).join("")}</dl>`;
 function lista(l) { return l.length ? `<ul class="lista-s">${l.map(i => `<li>${itemBtn(i)}<small>${[i.status ? dispWord(i.status) : "", quandoTxt(i).replace(/<[^>]+>/g, "")].filter(Boolean).join(" · ")}</small></li>`).join("")}</ul>` : `<p class="vazio">${t("nada_aberto_aqui")}</p>`; }
@@ -1674,6 +1736,7 @@ function montarPaginaMenu() {
   const bp = $("btnAnoProx"); if (bp) bp.addEventListener("click", () => { ANO_VISTO = String(Number(ANO_VISTO) + 1); renderMesesBar(); montarPaginaMenu(); });
   const lpt = $("btnLangPt"); if (lpt) lpt.addEventListener("click", () => setLang("pt"));
   const len = $("btnLangEn"); if (len) len.addEventListener("click", () => setLang("en"));
+  const bec = $("btnEditarConfig"); if (bec) bec.addEventListener("click", () => mostrarTelaConfig());
 }
 function abrirPaginaMenu() { $("mesaView").hidden = true; $("paginaMenu").hidden = false; $("btnMenuAmelie").setAttribute("aria-pressed", "true"); montarPaginaMenu(); window.scrollTo(0, 0); }
 function fecharPaginaMenu() { $("paginaMenu").hidden = true; $("mesaView").hidden = false; $("btnMenuAmelie").setAttribute("aria-pressed", "false"); }
