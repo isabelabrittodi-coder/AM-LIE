@@ -732,7 +732,8 @@ const DICT = {
 
     menu_titulo: "Menu da Amélie", menu_sub: "O que ela é, quem você é pra ela, a quem está ligada, e a conversa deste mês",
     menu_h_faz: "O que a Amélie faz",
-    menu_desc_faz: "Amélie é a secretária pessoal da Isabela: lê o que chega pelo WhatsApp, organiza a agenda e as tarefas entre o Google Agenda e o Notion, resolve sozinha os conflitos de horário dentro de um mesmo dia, manda os briefings diários, semanais, mensais e anuais, e conduz o fechamento mensal da Roda da Vida — sempre na mesma voz calma e discreta.",
+    menu_desc_faz_tpl: "Amélie é a secretária pessoal de %s: lê o que chega pelo WhatsApp, organiza a agenda e as tarefas entre o Google Agenda e o Notion, resolve sozinha os conflitos de horário dentro de um mesmo dia, manda os briefings diários, semanais, mensais e anuais, e conduz o fechamento mensal da Roda da Vida — sempre na mesma voz calma e discreta.",
+    vc_generico: "quem usa este painel",
     menu_h_personalizacao: "Personalização", menu_h_agentes: "Agentes conectados", menu_h_historico: "Histórico por ano",
     historico_desc_tpl: "Nenhum mês é apagado quando o ano vira. Escolha o ano aqui para ver os meses dele na barra do topo — toque num mês lá para abrir a Roda da Vida, o resumo e a autoavaliação daquele mês",
     historico_desc_suf_atual: ", incluindo os já passados.", historico_desc_suf_outro: ".",
@@ -893,7 +894,8 @@ const DICT = {
 
     menu_titulo: "Amélie's menu", menu_sub: "What she is, who you are to her, who she's connected to, and this month's conversation",
     menu_h_faz: "What Amélie does",
-    menu_desc_faz: "Amélie is Isabela's personal secretary: she reads what comes in on WhatsApp, organises the calendar and tasks between Google Calendar and Notion, resolves same-day schedule conflicts on her own, sends the daily, weekly, monthly and yearly briefings, and runs the monthly Wheel-of-Life closing — always in the same calm, discreet voice.",
+    menu_desc_faz_tpl: "Amélie is %s's personal secretary: she reads what comes in on WhatsApp, organises the calendar and tasks between Google Calendar and Notion, resolves same-day schedule conflicts on her own, sends the daily, weekly, monthly and yearly briefings, and runs the monthly Wheel-of-Life closing — always in the same calm, discreet voice.",
+    vc_generico: "whoever uses this panel",
     menu_h_personalizacao: "Personalisation", menu_h_agentes: "Connected agents", menu_h_historico: "History by year",
     historico_desc_tpl: "No month is ever deleted when the year turns. Pick a year here to see its months in the bar at the top — tap a month there to open its Wheel of Life, summary and self-assessment",
     historico_desc_suf_atual: ", including past ones.", historico_desc_suf_outro: ".",
@@ -1048,6 +1050,7 @@ const QUOTES_EN = [
 
 const $ = id => document.getElementById(id);
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const nomeUsuario = () => (S.perfil && S.perfil["Nome"] && String(S.perfil["Nome"]).trim()) || t("vc_generico");
 const plain = s => String(s || "").replace(/^\S+\s/, "");
 /* exibição em inglês dos valores fixos do Notion (Status/Lista/Tipo/Energia/Categoria) — o valor gravado nunca muda, só a palavra mostrada. */
 const WORD_EN = {
@@ -1582,9 +1585,10 @@ async function gerarResumoMes(mid, btn) {
     const st = statsDoMes(mid);
     const [ay, am] = mid.split("-");
     const nomeMes = `${MON_CAP(+am - 1)} de ${ay}`;
-    const notasTxt = FRENTES.filter(f => row && typeof row[f] === "number").map(f => `${FR[f].label}: ${row[f]}`).join("; ") || "nenhuma nota lançada pela Isabela neste mês";
+    const notasTxt = FRENTES.filter(f => row && typeof row[f] === "number").map(f => `${FR[f].label}: ${row[f]}`).join("; ") || "nenhuma nota lançada neste mês";
     const idiomaResposta = LANG === "en" ? "Write your answer in natural English." : "Escreva sua resposta em português.";
-    const prompt = `Você é a Amélie, secretária pessoal da Isabela: calma, elegante, direta, nunca corporativa ou efusiva, nunca lista numerada. Escreva um resumo curto (4 a 6 frases, texto corrido) do mês de ${nomeMes} da Isabela, baseado só nestes dados reais — nunca invente datas, pessoas ou fatos que não estejam aqui:\n\n- Total de itens (tarefas/compromissos) com data naquele mês: ${st.total}.\n- Por área da Roda da Vida, mais movimentada primeiro: ${st.porArea.map(a => `${a.area} (${a.total} itens, ${a.concluidas} concluídas)`).join("; ") || "sem dados suficientes"}.\n- Notas que a Isabela deu à Roda da Vida naquele mês: ${notasTxt}.\n- Justificativas que ela escreveu: ${row && row["Justificativas das notas"] ? row["Justificativas das notas"] : "nenhuma"}.\n\nFale sobre onde ela mais se dedicou, onde se dedicou menos, e, se houver notas da Roda da Vida, comente como ela ficou. Se não houver notas, diga isso com naturalidade e comente só com base na movimentação de tarefas — nunca invente um motivo emocional que não esteja nos dados. ${idiomaResposta}`;
+    const nome = nomeUsuario();
+    const prompt = `Você é a Amélie, secretária pessoal de ${nome}: calma, elegante, direta, nunca corporativa ou efusiva, nunca lista numerada. Escreva um resumo curto (4 a 6 frases, texto corrido) do mês de ${nomeMes} de ${nome}, baseado só nestes dados reais — nunca invente datas, pessoas ou fatos que não estejam aqui:\n\n- Total de itens (tarefas/compromissos) com data naquele mês: ${st.total}.\n- Por área da Roda da Vida, mais movimentada primeiro: ${st.porArea.map(a => `${a.area} (${a.total} itens, ${a.concluidas} concluídas)`).join("; ") || "sem dados suficientes"}.\n- Notas dadas à Roda da Vida naquele mês: ${notasTxt}.\n- Justificativas escritas: ${row && row["Justificativas das notas"] ? row["Justificativas das notas"] : "nenhuma"}.\n\nFale sobre onde ${nome} mais se dedicou, onde se dedicou menos, e, se houver notas da Roda da Vida, comente como ela ficou. Se não houver notas, diga isso com naturalidade e comente só com base na movimentação de tarefas — nunca invente um motivo emocional que não esteja nos dados. ${idiomaResposta}`;
     const res = await sample(prompt);
     const texto = (res && res.text || "").trim();
     if (!texto) { toast(t("toast_erro_resumo")); if (btn) btn.disabled = false; return; }
@@ -1637,7 +1641,7 @@ function idiomaHtml() {
 function menuHtml() {
   const anoHoje = TODAY.slice(0, 4);
   return `<h2 class="menu-h1">${t("menu_titulo")}</h2><p class="menu-sub">${t("menu_sub")}</p>` +
-    `<div class="menu-sec"><h3>${t("menu_h_faz")}</h3><p>${t("menu_desc_faz")}</p></div>` +
+    `<div class="menu-sec"><h3>${t("menu_h_faz")}</h3><p>${tf("menu_desc_faz_tpl", nomeUsuario())}</p></div>` +
     `<div class="menu-sec"><h3>${t("menu_h_idioma")}</h3>${idiomaHtml()}</div>` +
     `<div class="menu-sec"><h3>${t("menu_h_personalizacao")}</h3>${perfilHtml()}</div>` +
     `<div class="menu-sec"><h3>${t("menu_h_agentes")}</h3>${agentesConectadosHtml()}</div>` +
@@ -1805,7 +1809,7 @@ async function carregarNota(i) {
   const b = CORPO[i.id] || {};
   const fatos = { nome: i.name, tipo: i.tipo, rodaDaVida: FR[i.frente] ? FR[i.frente].label : "", lista: i.lista, status: i.status, prioridade: i.prio, energia: i.energia, prazo: i.prazo, dataPlanejada: i.plan, adiamentos: i.adi, observacao: i.obs, anotacoesDaPagina: b.txt || "" };
   const idiomaResposta = LANG === "en" ? "Write resumo, proximos_passos and atencao in natural English." : "Escreva resumo, proximos_passos e atencao em português.";
-  const prompt = `Você é a Amélie, secretária pessoal da Isabela: culta, calma, clara e discreta. Escreva uma nota curta sobre o item abaixo, para que ela saiba o essencial antes de agir. Responda só com JSON.
+  const prompt = `Você é a Amélie, secretária pessoal de ${nomeUsuario()}: culta, calma, clara e discreta. Escreva uma nota curta sobre o item abaixo, para que ela saiba o essencial antes de agir. Responda só com JSON.
 
 Hoje é ${DOW_LONG[dowOf(TODAY)]}, ${TODAY}.
 
@@ -1904,13 +1908,13 @@ async function reabrir(id) {
   try { await setStatus(id, "⬜ A fazer"); i.status = "⬜ A fazer"; toast(tf("toast_reaberta_tpl", i.parts[0])); renderAll(); atualizar(); } catch { toast(t("toast_erro_reabrir")); }
 }
 
-/* ---------- recado: a Isa fala, a Amélie organiza ---------- */
+/* ---------- recado: a pessoa fala, a Amélie organiza ---------- */
 let draft = null, capCtl = null;
 function capturePrompt(text) {
   const prox = Array.from({ length: 7 }, (_, k) => { const d = addDays(TODAY, k + 1); return `${DOW_LONG[dowOf(d)]} = ${d}`; }).join("; ");
-  return `Você é a Amélie, secretária pessoal da Isabela. Transforme a anotação abaixo em registros estruturados. Responda só com JSON.
+  return `Você é a Amélie, secretária pessoal de ${nomeUsuario()}. Transforme a anotação abaixo em registros estruturados. Responda só com JSON.
 
-Hoje é ${DOW_LONG[dowOf(TODAY)]}, ${TODAY}. Próximos dias: ${prox}. Fuso: America/Sao_Paulo.
+Hoje é ${DOW_LONG[dowOf(TODAY)]}, ${TODAY}. Próximos dias: ${prox}. Fuso: ${TZ}.
 
 - nome: o título da tarefa, no formato [Verbo no infinitivo] + [objeto ou atividade específica], numa frase natural e direta (ex.: "Enviar candidatura à OCDE", "Cancelar sessão de terapia", "Decidir sobre aula de samba"). Para compromisso recorrente, pode ser só o nome do evento ("Estágio", "Aula de Inglês"). Nunca use barras verticais, travessões ou qualquer separador para embutir classificação, data, hora, prioridade ou status — essas informações já vão em campos próprios.
 - classificacao: uma de ${CLASSES.join(", ")}; null quando o nome já identifica um dos projetos conhecidos (${PROJECTS.join(", ")}).
@@ -1923,7 +1927,7 @@ Regras:
 - prioridade (P01 a P05, sendo P01 a mais urgente): qualquer candidatura (tipo Candidatura) é sempre "P01". Fora isso, "P01" só se disser urgente; "P02" se disser importante; senão null.
 - energia: ⚡ Alta, 🔋 Média, 🪫 Baixa, ou null.
 - lista: "✅ Afazeres" para algo a fazer; "📥 Inbox" quando vago; "🛒 Compras"; "🌱 Lista de Desejos"; "💡 Ideias"; "📚 Livros".
-- frente = a área da Roda da Vida que melhor representa isso na vida da Isabela (exatamente uma): ${FRENTES.map(f => `${f} (${FR[f].label})`).join(" | ")}.
+- frente = a área da Roda da Vida que melhor representa isso (exatamente uma): ${FRENTES.map(f => `${f} (${FR[f].label})`).join(" | ")}.
 - tipo (exatamente um): ${TIPOS.join(", ")}.
 - duvidas: o que ficou ambíguo e vale confirmar (pode ser []).
 
