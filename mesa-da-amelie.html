@@ -383,50 +383,6 @@ button.cel:hover{background:rgba(220,203,174,.35)}
   <div class="meses-bar-in" id="mesesBar"></div>
 </nav>
 
-<!-- ================= CONFIGURAÇÃO INICIAL (só aparece sem config salva neste navegador) ================= -->
-<section class="pagina-menu" id="telaConfig" hidden aria-label="Configuração">
-  <div class="pagina-menu-in">
-    <h2 class="menu-h1">Vamos começar</h2>
-    <p class="menu-sub" style="font-style:normal;font-size:13px;color:var(--terracota)">Importante: publique esta página como o <b>seu próprio</b> Artifact. Nunca abra o link do Artifact de outra pessoa para configurar o seu — cada instalação precisa ser independente.</p>
-
-    <div class="menu-sec" id="onbChat">
-      <div id="onbMsgs" class="onb-msgs"></div>
-      <div id="onbPassoNome">
-        <div class="edita">
-          <label class="nm" for="onb_nome">Como posso te chamar?<input id="onb_nome" type="text" placeholder="seu nome ou apelido"></label>
-          <div class="acoes"><button type="button" class="b" id="onbBtnNome">Continuar</button></div>
-        </div>
-      </div>
-      <div id="onbPassoNotion" hidden>
-        <div class="edita">
-          <label class="nm" for="onb_notion">Me conta com suas palavras<textarea id="onb_notion" rows="3" placeholder="cole o link de uma página do Notion (pode estar em branco), ou me conte com suas palavras"></textarea></label>
-          <div class="acoes"><button type="button" class="b" id="onbBtnNotion">Enviar pra Amélie</button><button type="button" class="b v" id="onbBtnManual">Prefiro preencher à mão</button></div>
-        </div>
-      </div>
-    </div>
-
-    <div class="menu-sec" id="onbAvancado" hidden>
-      <div class="edita" aria-label="Configuração">
-        <label class="nm" for="cf_ds">ID da base de tarefas ("Amélia — Controle — Geral")<input id="cf_ds" type="text" placeholder="collection://... ou o ID da base, da URL do Notion"></label>
-        <label class="nm" for="cf_roda">ID da base "Roda da Vida — Mensal"<input id="cf_roda" type="text" placeholder="collection://..."></label>
-        <div class="acoes"><button type="button" class="b" id="btnSalvarConfig">Salvar e começar</button><button type="button" class="b v" id="btnCancelarConfig" hidden>Cancelar</button></div>
-      </div>
-      <p class="vazio" style="margin-top:10px">O ID de uma base do Notion é o trecho de letras e números na URL dela, depois do nome do espaço de trabalho.</p>
-      <details class="avancado">
-        <summary>Mais configurações</summary>
-        <div class="edita" aria-label="Configuração avançada">
-          <label class="nm" for="cf_cal">Identificador da sua agenda principal no Google<input id="cf_cal" type="text" placeholder="primary (ou o e-mail de outra agenda)" value="primary"></label>
-          <label class="nm" for="cf_view">ID da visualização de itens (opcional)<input id="cf_view" type="text" placeholder="view://..."></label>
-          <label class="nm" for="cf_world">ID da página do briefing de notícias (opcional)<input id="cf_world" type="text" placeholder="ID da página"></label>
-          <label class="nm" for="cf_ciclo">ID da base "Ciclo" (opcional)<input id="cf_ciclo" type="text" placeholder="collection://..."></label>
-          <label class="nm" for="cf_perfil">ID da base "Perfil" (opcional)<input id="cf_perfil" type="text" placeholder="collection://..."></label>
-          <label class="nm" for="cf_json">Colar tudo de uma vez (opcional, substitui os campos acima)<textarea id="cf_json" rows="4" placeholder='{"DS_ID":"...","CALS":[...],"PROJECTS":[...],"PROJ_IDS":{...},"FLEX_PROJETOS":[...]}'></textarea></label>
-        </div>
-      </details>
-    </div>
-  </div>
-</section>
-
 <div class="mesa" id="mesaView">
 
   <!-- ================= TOPO ================= -->
@@ -631,156 +587,6 @@ const FLEX = (CFG.FLEX_PROJETOS && CFG.FLEX_PROJETOS.length)
   ? new RegExp("^(" + CFG.FLEX_PROJETOS.map(s => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")).join("|") + ")\\b")
   : /^(?!)/;
 
-/* ------------------------------------------------------------------------
-   ONBOARDING CONVERSADO — a Amélie pergunta o nome e pede um link de uma
-   página do Notion (em branco ou não); a partir dele, ela mesma cria as
-   bases de tarefas, Roda da Vida e Perfil, já com a taxonomia certa, ao
-   vivo, usando o conector do Notion. Nada de IDs pra quem está começando.
-   ------------------------------------------------------------------------ */
-const ONB_TIPOS = [["Tarefa","blue"],["Compromisso","green"],["Reunião","yellow"],["Evento","pink"],["Prazo","red"],["Lembrete","orange"],["Rotina","gray"],["Candidatura","purple"],["Curso","blue"],["Entrega","green"],["Documento","yellow"],["Controle","pink"],["Pagamento","red"],["Reserva","orange"],["Leitura","gray"],["Compra","purple"],["Aula","blue"],["Consulta","green"]];
-const ONB_LISTAS = [["✅ Afazeres","blue"],["📥 Inbox","gray"],["📌 Pendências","orange"],["🛒 Compras","pink"],["🌱 Lista de Desejos","green"],["💡 Ideias","yellow"],["📚 Livros","purple"]];
-const ONB_STATUS = [["📥 Inbox","gray"],["⬜ A fazer","blue"],["🔄 Em andamento","yellow"],["⏸️ Aguardando","orange"],["✅ Concluída","green"],["🗑️ Cancelada","red"]];
-const ONB_RODA = [["🔵 Contribuição social","blue"],["🔷 Finanças e bens","blue"],["🩵 Realização e propósito","blue"],["🟢 Saúde e disposição","green"],["🌿 Desenvolvimento do intelecto","green"],["🍀 Equilíbrio emocional","green"],["🩷 Família","pink"],["💗 Relacionamentos amorosos","pink"],["💞 Vida social","pink"],["🟡 Espiritualidade","yellow"],["🌼 Plenitude e felicidade","yellow"],["🎉 Lazer e diversão","yellow"]];
-const ONB_PRIOS = [["P01","red"],["P02","orange"],["P03","yellow"],["P04","blue"],["P05","gray"]];
-const ONB_ENERGIAS = [["⚡ Alta","red"],["🔋 Média","yellow"],["🪫 Baixa","gray"]];
-const ONB_CLASSES = [["FDV","blue"],["Trabalho","green"],["Carreira","yellow"],["Política","pink"],["Projeto","purple"],["Pessoal","orange"],["Social","red"],["Saúde","gray"],["Administrativo","brown"],["Viagem","blue"]];
-const ONB_CATS = [["🥦 Mercado","green"],["📚 Livro","purple"],["👗 Roupa","pink"],["📦 Outros","gray"]];
-const ddlSel = pairs => "SELECT(" + pairs.map(([o, c]) => `'${String(o).replace(/'/g, "''")}':${c}`).join(", ") + ")";
-const DDL_TAREFAS = `CREATE TABLE ("Nome" TITLE, "Status" ${ddlSel(ONB_STATUS)}, "Lista" ${ddlSel(ONB_LISTAS)}, "Tipo" ${ddlSel(ONB_TIPOS)}, "Roda da Vida" ${ddlSel(ONB_RODA)}, "Prioridade" ${ddlSel(ONB_PRIOS)}, "Energia" ${ddlSel(ONB_ENERGIAS)}, "Classificação" ${ddlSel(ONB_CLASSES)}, "Categoria" ${ddlSel(ONB_CATS)}, "Obs" RICH_TEXT, "Origem" RICH_TEXT, "Prazo" DATE, "Data planejada" DATE, "Quando" DATE, "Adiamentos" NUMBER, "Projetos" RICH_TEXT)`;
-const DDL_RODA = `CREATE TABLE ("Mês" TITLE, "Referência" DATE, ${ONB_RODA.map(([o]) => `"${o}" NUMBER`).join(", ")}, "Maior necessidade do mês" RICH_TEXT, "Justificativas das notas" RICH_TEXT, "Mudanças propostas" RICH_TEXT, "Prioridade do mês" RICH_TEXT, "Resumo do mês" RICH_TEXT)`;
-const DDL_PERFIL = `CREATE TABLE ("Campo" TITLE, "Nome" RICH_TEXT, "Apelido" RICH_TEXT, "Profissão" RICH_TEXT, "O que a Amélie deve saber" RICH_TEXT)`;
-function extrairNotionId(texto) {
-  const m = String(texto || "").match(/([0-9a-f]{8}-?[0-9a-f]{4}-?[0-9a-f]{4}-?[0-9a-f]{4}-?[0-9a-f]{12})/i);
-  return m ? m[1].replace(/-/g, "") : null;
-}
-function onbMsg(texto) {
-  const box = document.getElementById("onbMsgs"); if (!box) return;
-  const p = document.createElement("p"); p.textContent = texto; box.appendChild(p);
-  box.scrollTop = box.scrollHeight;
-}
-function respostaMcp(r) {
-  try { return (r && (r.text || (Array.isArray(r.content) && r.content[0] && r.content[0].text))) || String(r || ""); }
-  catch { return ""; }
-}
-async function onbCriarBases(pageId, nome) {
-  await conectarClaude;
-  if (!mcp) {
-    onbMsg("Não estou conseguindo falar com o Notion agora — talvez o conector não esteja liberado nesta página (Configurações › Conectores no claude.ai). Você pode preencher os IDs manualmente ali embaixo, em \"Prefiro preencher à mão\".");
-    return false;
-  }
-  onbMsg("Encontrei a página. Vou montar suas bases aí dentro, já com a Roda da Vida organizada — um instante…");
-  try {
-    await mcp.callTool("Notion", "notion-create-database", { parent: { type: "page_id", page_id: pageId }, title: "Amélia — Controle — Geral", schema: DDL_TAREFAS });
-    await mcp.callTool("Notion", "notion-create-database", { parent: { type: "page_id", page_id: pageId }, title: "Roda da Vida — Mensal", schema: DDL_RODA });
-    await mcp.callTool("Notion", "notion-create-database", { parent: { type: "page_id", page_id: pageId }, title: "Perfil", schema: DDL_PERFIL });
-  } catch (e) {
-    onbMsg("Não consegui criar as bases agora — pode ser permissão do Notion nessa página, ou a conexão caiu. Você pode tentar de novo em instantes, ou preencher os IDs manualmente ali embaixo.");
-    return false;
-  }
-  let dsId = null, rodaId = null, perfilId = null;
-  try {
-    const r = await mcp.callTool("Notion", "notion-fetch", { id: pageId });
-    const texto = respostaMcp(r);
-    const pegaId = titulo => {
-      const re = new RegExp(titulo.replace(/[.*+?^${}()|[\]\\]/g, "\\$&") + "[\\s\\S]{0,500}?collection://([0-9a-f-]+)", "i");
-      const m = texto.match(re); return m ? m[1] : null;
-    };
-    dsId = pegaId("Amélia — Controle — Geral"); rodaId = pegaId("Roda da Vida — Mensal"); perfilId = pegaId("Perfil");
-  } catch {}
-  if (!dsId || !rodaId) {
-    onbMsg("Criei as bases, mas não consegui confirmar os IDs automaticamente dessa vez. Abra a página no Notion e cole os links das bases \"Amélia — Controle — Geral\" e \"Roda da Vida — Mensal\" em \"Prefiro preencher à mão\", ali embaixo.");
-    return false;
-  }
-  if (nome && perfilId) {
-    try { await mcp.callTool("Notion", "notion-create-pages", { parent: { type: "data_source_id", data_source_id: perfilId }, pages: [{ properties: { "Campo": "Perfil", "Nome": nome, "Apelido": nome } }], allow_async: false }); } catch {}
-  }
-  salvarConfig({ ...CONFIG_PADRAO, DS_ID: dsId, RODA_DS: rodaId, PERFIL_DS: perfilId || "" });
-  onbMsg(`Pronto, ${nome}! Suas bases já estão criadas e organizadas com a Roda da Vida. Abrindo sua mesa…`);
-  setTimeout(() => location.reload(), 1400);
-  return true;
-}
-let onbNome = "";
-function iniciarOnboarding() {
-  const msgs = document.getElementById("onbMsgs"); if (msgs) msgs.innerHTML = "";
-  const passoNome = document.getElementById("onbPassoNome"), passoNotion = document.getElementById("onbPassoNotion");
-  passoNome.hidden = false; passoNotion.hidden = true;
-  onbMsg("Oi! Eu sou a Amélie. Antes da gente começar, como posso te chamar?");
-  const nomeInput = document.getElementById("onb_nome");
-  const irPraNotion = () => {
-    const v = (nomeInput.value || "").trim();
-    if (!v) { nomeInput.focus(); return; }
-    onbNome = v;
-    onbMsg(v);
-    onbMsg(`${v}, prazer! Agora me conta: você já tem um lugar no Notion onde organiza tarefas? Pode colar o link de uma página — pode até estar em branco, eu organizo tudo dentro dela — ou só me contar com suas palavras.`);
-    passoNome.hidden = true; passoNotion.hidden = false;
-    document.getElementById("onb_notion").focus();
-  };
-  document.getElementById("onbBtnNome").onclick = irPraNotion;
-  nomeInput.onkeydown = ev => { if (ev.key === "Enter") irPraNotion(); };
-  const btnNotion = document.getElementById("onbBtnNotion");
-  btnNotion.onclick = async () => {
-    const campo = document.getElementById("onb_notion");
-    const texto = (campo.value || "").trim();
-    if (!texto) { campo.focus(); return; }
-    onbMsg(texto);
-    btnNotion.disabled = true;
-    const id = extrairNotionId(texto);
-    if (!id) {
-      onbMsg("Não achei um link do Notion nessa mensagem. Pode colar o endereço completo da página (começa com notion.so/...)? Se preferir não mexer com Notion agora, dá pra preencher os IDs manualmente ali embaixo, a qualquer momento.");
-      btnNotion.disabled = false;
-      return;
-    }
-    await onbCriarBases(id, onbNome);
-    btnNotion.disabled = false;
-  };
-  const btnManual = document.getElementById("onbBtnManual");
-  if (btnManual) btnManual.onclick = () => {
-    const av = document.getElementById("onbAvancado");
-    av.hidden = false; av.scrollIntoView({ behavior: "smooth", block: "start" });
-  };
-}
-function mostrarTelaConfig() {
-  const mv = document.getElementById("mesaView"); if (mv) mv.hidden = true;
-  const bar = document.querySelector(".meses-bar"); if (bar) bar.hidden = true;
-  const pm = document.getElementById("paginaMenu"); if (pm) pm.hidden = true;
-  document.getElementById("telaConfig").hidden = false;
-  const btnCancelar = document.getElementById("btnCancelarConfig");
-  const onbChat = document.getElementById("onbChat"), onbAvancado = document.getElementById("onbAvancado");
-  const jaConfigurado = !!(CFG.DS_ID && CFG.RODA_DS);
-  if (jaConfigurado) {
-    btnCancelar.hidden = false;
-    btnCancelar.onclick = () => { document.getElementById("telaConfig").hidden = true; if (mv) mv.hidden = false; if (bar) bar.hidden = false; };
-    onbChat.hidden = true; onbAvancado.hidden = false;
-  } else {
-    btnCancelar.hidden = true;
-    onbChat.hidden = false; onbAvancado.hidden = true;
-    iniciarOnboarding();
-  }
-  const set = (id, val) => { const el = document.getElementById(id); if (el) el.value = val || ""; };
-  set("cf_ds", CFG.DS_ID); set("cf_world", CFG.WORLD_PAGE); set("cf_view", CFG.ITEMS_VIEW);
-  set("cf_roda", CFG.RODA_DS); set("cf_ciclo", CFG.CICLO_DS); set("cf_perfil", CFG.PERFIL_DS);
-  set("cf_cal", (CFG.CALS && CFG.CALS[0] && CFG.CALS[0].id) || "primary");
-  document.getElementById("btnSalvarConfig").onclick = () => {
-    const v = id => (document.getElementById(id).value || "").trim();
-    const jsonTxt = v("cf_json");
-    if (jsonTxt) {
-      try {
-        const colado = JSON.parse(jsonTxt);
-        if (!colado.DS_ID || !colado.RODA_DS) { alert("O JSON precisa ter pelo menos DS_ID e RODA_DS."); return; }
-        salvarConfig({ ...CONFIG_PADRAO, ...colado });
-        location.reload();
-        return;
-      } catch (e) { alert("Esse JSON não é válido — confira as vírgulas e aspas."); return; }
-    }
-    const dsId = v("cf_ds"), rodaId = v("cf_roda");
-    if (!dsId || !rodaId) { alert("Preencha pelo menos a base de tarefas e a Roda da Vida."); return; }
-    salvarConfig({ ...CONFIG_PADRAO, DS_ID: dsId, WORLD_PAGE: v("cf_world"), ITEMS_VIEW: v("cf_view"),
-      RODA_DS: rodaId, CICLO_DS: v("cf_ciclo"), PERFIL_DS: v("cf_perfil"),
-      CALS: [{ id: v("cf_cal") || "primary", label: "Pessoal" }] });
-    location.reload();
-  };
-}
-if (!DS_ID || !RODA_DS) { mostrarTelaConfig(); return; }
 /* ════════════════════════════════════════════════════════════════════
    FIM DA CONFIGURAÇÃO PESSOAL. A partir daqui é o motor da Amélie —
    regras e taxonomia genéricas, iguais para qualquer pessoa que use
@@ -1812,8 +1618,7 @@ function menuHtml() {
     `<div class="menu-sec"><h3>${t("menu_h_personalizacao")}</h3>${perfilHtml()}</div>` +
     `<div class="menu-sec"><h3>${t("menu_h_agentes")}</h3>${agentesConectadosHtml()}</div>` +
     `<div class="menu-sec"><h3>${t("menu_h_historico")}</h3><div class="ano-nav"><button type="button" id="btnAnoAnt" aria-label="${esc(t('ano_ant_aria'))}">‹</button><strong>${ANO_VISTO}</strong><button type="button" id="btnAnoProx" aria-label="${esc(t('ano_prox_aria'))}">›</button></div><p style="margin-top:10px;font-size:13px;color:var(--tinta-2)">${t("historico_desc_tpl")}${ANO_VISTO !== anoHoje ? t("historico_desc_suf_outro") : t("historico_desc_suf_atual")}</p></div>` +
-    `<div class="menu-sec"><h3>${tf("menu_h_avaliacao_tpl", MON_CAP(+TODAY.slice(5, 7) - 1), anoHoje)}</h3>${rodaFormHtml(MES_ID(TODAY))}</div>` +
-    `<div class="menu-sec"><h3>${t("menu_h_config")}</h3><p>${t("menu_desc_config")}</p><div class="acoes" style="margin-top:10px"><button type="button" class="b v" id="btnEditarConfig">${t("btn_editar_config")}</button></div></div>`;
+    `<div class="menu-sec"><h3>${tf("menu_h_avaliacao_tpl", MON_CAP(+TODAY.slice(5, 7) - 1), anoHoje)}</h3>${rodaFormHtml(MES_ID(TODAY))}</div>`;
 }
 const dl = rows => `<dl class="dl">${rows.filter(r => r[1]).map(([k, v]) => `<dt>${k}</dt><dd>${v}</dd>`).join("")}</dl>`;
 function lista(l) { return l.length ? `<ul class="lista-s">${l.map(i => `<li>${itemBtn(i)}<small>${[i.status ? dispWord(i.status) : "", quandoTxt(i).replace(/<[^>]+>/g, "")].filter(Boolean).join(" · ")}</small></li>`).join("")}</ul>` : `<p class="vazio">${t("nada_aberto_aqui")}</p>`; }
@@ -1909,7 +1714,6 @@ function montarPaginaMenu() {
   const bp = $("btnAnoProx"); if (bp) bp.addEventListener("click", () => { ANO_VISTO = String(Number(ANO_VISTO) + 1); renderMesesBar(); montarPaginaMenu(); });
   const lpt = $("btnLangPt"); if (lpt) lpt.addEventListener("click", () => setLang("pt"));
   const len = $("btnLangEn"); if (len) len.addEventListener("click", () => setLang("en"));
-  const bec = $("btnEditarConfig"); if (bec) bec.addEventListener("click", () => mostrarTelaConfig());
 }
 function abrirPaginaMenu() { $("mesaView").hidden = true; $("paginaMenu").hidden = false; $("btnMenuAmelie").setAttribute("aria-pressed", "true"); montarPaginaMenu(); window.scrollTo(0, 0); }
 function fecharPaginaMenu() { $("paginaMenu").hidden = true; $("mesaView").hidden = false; $("btnMenuAmelie").setAttribute("aria-pressed", "false"); }
