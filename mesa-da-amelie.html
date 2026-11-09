@@ -568,7 +568,8 @@ button.cel:hover{background:rgba(220,203,174,.35)}
    ════════════════════════════════════════════════════════════════════ */
 const CONFIG_PADRAO = {
   DS_ID: "", WORLD_PAGE: "", ITEMS_VIEW: "", RODA_DS: "", CICLO_DS: "", PERFIL_DS: "",
-  CALS: [{ id: "primary", label: "Pessoal" }], PROJECTS: [], PROJ_IDS: {}, FLEX_PROJETOS: []
+  CALS: [{ id: "primary", label: "Pessoal" }], PROJECTS: [], PROJ_IDS: {}, FLEX_PROJETOS: [],
+  AGENTES: [] /* espaço pra uma eventual conexão com agente financeiro — ex.: [{"nome":"Seu Agente"}] */
 };
 function carregarConfig() {
   try { const s = localStorage.getItem("amelie_config"); if (s) return { ...CONFIG_PADRAO, ...JSON.parse(s) }; } catch {}
@@ -577,7 +578,8 @@ function carregarConfig() {
 function salvarConfig(cfg) { try { localStorage.setItem("amelie_config", JSON.stringify(cfg)); } catch {} }
 const CFG = carregarConfig() || CONFIG_PADRAO;
 const DS_ID = CFG.DS_ID, WORLD_PAGE = CFG.WORLD_PAGE, ITEMS_VIEW = CFG.ITEMS_VIEW, RODA_DS = CFG.RODA_DS,
-  CICLO_DS = CFG.CICLO_DS, PERFIL_DS = CFG.PERFIL_DS, CALS = CFG.CALS, PROJECTS = CFG.PROJECTS, PROJ_IDS = CFG.PROJ_IDS;
+  CICLO_DS = CFG.CICLO_DS, PERFIL_DS = CFG.PERFIL_DS, CALS = CFG.CALS, PROJECTS = CFG.PROJECTS, PROJ_IDS = CFG.PROJ_IDS,
+  AGENTES = CFG.AGENTES || [];
 const FLEX = (CFG.FLEX_PROJETOS && CFG.FLEX_PROJETOS.length)
   ? new RegExp("^(" + CFG.FLEX_PROJETOS.map(s => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")).join("|") + ")\\b")
   : /^(?!)/;
@@ -711,7 +713,7 @@ const DICT = {
     err_fallback_tpl: "Não consegui ler o %s agora%s.",
 
     agente_financeiro: "agente financeiro", conectado_so_consulta: "conectado · só consulta",
-    bento_nota: "Amélie só pergunta ao Bento (orçamento, gastos, disponibilidade) e repete o número que ele devolve — nunca registra nem edita nada das bases dele.",
+    agente_nota_tpl: "Amélie só pergunta a %s (orçamento, gastos, disponibilidade) e repete o número que ele devolve — nunca registra nem edita nada das bases dele.",
     nenhum_agente: "Nenhum outro agente conectado por enquanto.",
 
     roda_form_canon_tpl: "%s de %s · de 1 (vazio) a 10 (pleno) · diga também por quê",
@@ -872,7 +874,7 @@ const DICT = {
     err_fallback_tpl: "Couldn't read %s right now%s.",
 
     agente_financeiro: "financial agent", conectado_so_consulta: "connected · read-only",
-    bento_nota: "Amélie only asks Bento (budget, spending, availability) and repeats the number it returns — she never logs or edits anything in his own records.",
+    agente_nota_tpl: "Amélie only asks %s (budget, spending, availability) and repeats the number it returns — she never logs or edits anything in its own records.",
     nenhum_agente: "No other agent connected for now.",
 
     roda_form_canon_tpl: "%s %s · from 1 (empty) to 10 (full) · say why too",
@@ -1533,13 +1535,10 @@ function renderAll() {
 
 /* ---------- folha solta ---------- */
 function findItem(k) { return (S.items || []).find(i => (i.id || i.name) === k); }
-/* Agentes ligados à Amélie — hoje só o Bento (consulta, só leitura); novos agentes entram só nesta lista. O nome "Bento" é dado pessoal e não traduz; descrição traduz. */
-const AGENTES = [
-  { nome: "Bento" }
-];
+/* Agentes ligados à Amélie — vazio por padrão (espaço pra uma eventual conexão com agente financeiro); o nome de cada agente é dado pessoal e vem do CFG, nunca fixo no código. */
 function agentesConectadosHtml() {
   if (!AGENTES.length) return `<p class="vazio">${t("nenhum_agente")}</p>`;
-  return `<ul class="lista-s">` + AGENTES.map(ag => `<li><span style="font:600 15px var(--f-datilo)">${esc(ag.nome)}</span><small>${esc(t("agente_financeiro"))} · ${esc(t("conectado_so_consulta"))}</small><p class="corpo" style="margin-top:4px;font-size:13px">${esc(t("bento_nota"))}</p></li>`).join("") + `</ul>`;
+  return `<ul class="lista-s">` + AGENTES.map(ag => `<li><span style="font:600 15px var(--f-datilo)">${esc(ag.nome)}</span><small>${esc(t("agente_financeiro"))} · ${esc(t("conectado_so_consulta"))}</small><p class="corpo" style="margin-top:4px;font-size:13px">${esc(tf("agente_nota_tpl", ag.nome))}</p></li>`).join("") + `</ul>`;
 }
 /* Formulário mensal da Roda da Vida, para um mês qualquer (padrão: o mês atual) — usado na folha "roda" e na página do Menu. */
 function rodaFormHtml(mid) {
