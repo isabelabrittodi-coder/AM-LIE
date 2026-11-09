@@ -566,6 +566,347 @@ const FLEX = /^(Kelsen Explica|Estudar para a Faculdade|Projeto Pessoal|RAÍZES|
    ════════════════════════════════════════════════════════════════════ */
 const TZ = "America/Sao_Paulo";
 const N = "Notion", G = "Google Calendar";
+
+/* ════════════════════════════════════════════════════════════════════
+   IDIOMA — detecta o idioma de quem abre o painel (ou o que a pessoa
+   escolheu antes) e traduz a interface. Nunca muda valor gravado no
+   Notion (Status, Lista, Tipo, Energia, nomes de projeto, chaves da
+   Roda da Vida) — só o texto mostrado na tela.
+   ════════════════════════════════════════════════════════════════════ */
+let LANG = (() => {
+  try { const saved = localStorage.getItem("amelie_lang"); if (saved === "pt" || saved === "en") return saved; } catch {}
+  return (navigator.language || "pt").toLowerCase().startsWith("en") ? "en" : "pt";
+})();
+const DICT = {
+  pt: {
+    menu_label: "Menu", menu_abrir_aria: "Abrir menu da Amélie",
+    hoje: "Hoje", lendo_agenda: "lendo a agenda…", prazos: "Prazos", lendo: "Lendo…",
+    mesa_de_bordo: "Mesa de bordo", tese: "Uma página calma no centro, a colagem nas margens e, em cada papel, uma função.",
+    ir_noticias_aria: "Ir para as notícias do dia", notas_label: "Notas", notas_placeholder: "para você viver\nno aqui\ne\nno agora",
+    recado_aria: "Escrever um recado para a Amélie", prioridades: "Prioridades", urgencias: "urgências",
+    mesa_continua: "e a mesa continua…",
+    cap_i: "I · Recado", cap_ii: "II · Comentário", cap_iii: "III · Mundo", cap_iv: "IV · Mês", cap_v: "V · Pendências", cap_vi: "VI · Adiante", cap_vii: "VII · Roda da Vida",
+    h_recado: "Diga à Amélie", recado_desc: "Escreva do jeito que vier. Ao tocar no selo de cera, ela organiza em demandas e compromissos para você conferir antes de guardar.",
+    capTexto_label: "Diga do jeito que vier", capTexto_placeholder: "quinta tenho reunião às 15h e preciso ler o documento antes…",
+    selar_title: "Selar e organizar", selar_aria: "Selar e organizar o recado",
+    h_comentario: "O que a Amélie viu", comentario_desc: "Uma leitura curta do momento e a frase da semana, que troca toda segunda.",
+    papel_salvia: "Papel sálvia", lendo_dia: "Lendo o seu dia…",
+    h_noticias: "As três do dia", news_desc_suffix: ", cruzados numa leitura só.", fontes_default: "El País · Folha · NYT", lendo_briefing: "Lendo o briefing…",
+    h_mes: "O mapa do mês", mapa_de: "O mapa de %s",
+    mes_desc: "Cada bolinha é um compromisso, na cor da área da Roda da Vida; vazada, é bloco flexível ou tarefa planejada. Dia com prazo real fica em papel rosa. Toque num dia para ver o que ele guarda.",
+    mes_ant_tpl: "‹ %s", mes_prox_tpl: "%s ›", este_mes: "este mês",
+    h_semana: "O que ficou para trás", semana_desc: "Prazos vencidos e o que depende de outra pessoa.",
+    passou_prazo: "Passou do prazo", depende_outro: "Depende de outra pessoa",
+    h_adiante: "Os próximos sete dias",
+    h_frentes: "Como está sua vida hoje", frentes_desc: "As áreas da Roda da Vida, com o que está aberto em cada uma. Toque para ver os itens.",
+    roda_titulo: "Roda da Vida", roda_mes_tpl: "Roda da Vida · %s de %s", atualizar_notas_mes: "Atualizar notas do mês",
+    footer_frase: "Pequenas coisas também contam.", voltar_topo: "↑ voltar ao topo da mesa", voltar_mesa: "← voltar à mesa",
+
+    dia_todo_curto: "dia", nada_marcado_hoje: "nada marcado hoje", flexivel: "flexível",
+    nada_prioridade: "Nada pede prioridade agora.", sem_urgencias: "Sem outras urgências.", urgente: "urgente",
+    grupo_hoje: "Hoje", grupo_semana: "Esta semana", grupo_prox_semana: "Próx. semana",
+    estudo_do_dia: "estudo do dia", vencido: "vencido", nenhum_prazo_2sem: "Nenhum prazo real nas próximas duas semanas.",
+    compromisso_fixo_s: "compromisso fixo", compromisso_fixo_p: "compromissos fixos",
+    nenhum_prazo_hoje: "nenhum prazo hoje", prazo_hoje_s: "prazo hoje", prazo_hoje_p: "prazos hoje",
+    atrasada_s: "atrasada", atrasada_p: "atrasadas", hoje_resumo_tpl: "Hoje: %s.",
+    hoje_rel: "hoje", amanha_rel: "amanhã", ontem_rel: "ontem",
+    prazo_era_tpl: "prazo era %s", prazo_hoje_curto: "prazo hoje", prazo_amanha: "prazo amanhã", prazo_dow_tpl: "prazo %s", prazo_data_tpl: "prazo %s", planejada_tpl: "planejada %s",
+
+    ainda_nao_li: "Ainda não consegui ler suas demandas, então guardo o comentário para depois.",
+    nenhum_prazo_apertado: "Nenhum prazo apertado nos próximos três dias. É uma boa semana para avançar no que não tem data.",
+    ja_passou_s: "já passou do prazo", ja_passou_p: "já passaram do prazo",
+    vence_hoje_s: "vence hoje", vence_hoje_p: "vencem hoje",
+    vence_3dias_s: "vence nos próximos três dias", vence_3dias_p: "vencem nos próximos três dias",
+    ponto_um: "Há um ponto", pontos_n_tpl: "Há %s pontos", merece: "merece sua atenção", merecem: "merecem sua atenção",
+    restante_pode_esperar: " O restante pode esperar.", concentra_tpl: " %s concentra %s das %s demandas abertas.",
+
+    briefing_de_tpl: "briefing de %s", nao_atualizado_hoje: " · ainda não atualizado hoje",
+    briefing_nao_gerado: "O briefing de hoje ainda não foi gerado. Ele sai todo dia às 06:52.",
+    por_que_importa: "Por que importa.", como_jornal_tratou: "Como cada jornal tratou.", ler_na_fonte_tpl: "Ler na fonte (%s)",
+
+    semana_meta_tpl: "De %s a %s: compromissos, prazos reais e o que você planejou.",
+    prazo_do_dia: "prazo do dia · ", prazo_dot: "prazo · ", planejada_dot: "planejada · ", nada_anotado: "nada anotado",
+
+    compromisso_s: "compromisso", compromisso_p: "compromissos", prazo_s: "prazo", prazo_p: "prazos",
+    tarefa_planejada_s: "tarefa planejada", tarefa_planejada_p: "tarefas planejadas",
+    sem_area_titulo: "sem área no título", legenda_flexivel: "flexível, dia todo ou planejada", prazo_real: "prazo real",
+    ate_fim_mes: "Até o fim do mês", em_mes_tpl: "Em %s",
+    ha_prazos_tpl: "%s há %s; o primeiro é %s, %s.", nenhum_prazo_real_tpl: "Nenhum prazo real %s.",
+    prazo_real_s: "prazo real", prazo_real_p: "prazos reais",
+    semana_carregada_tpl: "A semana de %s a %s é a mais carregada, com %s%s.", e_prazos_tpl: " e %s",
+    dia_segue_s: "dia segue", dias_seguem_p: "dias seguem", nenhum_dia: "Nenhum dia",
+    tem_compromisso_fixo: "tem compromisso fixo.", sem_compromisso_fixo: "sem compromisso fixo.",
+    feriado_s: "Feriado", feriado_p: "Feriados", agenda_longa: "A agenda deste mês é longa; parte dos compromissos pode não aparecer aqui.",
+    media_mes_resumo_tpl: "Média do mês: %s.%s", nao_preenchida_mes: "Ainda não preenchida este mês.",
+
+    nenhuma_atrasada: "Nenhuma demanda passou do prazo.", nada_terceiros: "Nada depende de terceiros agora.", aguardando_label: "aguardando",
+
+    aberta_s: "aberta", aberta_p: "abertas", com_prazo_semana: " com prazo na semana", nada_aberto: "nada aberto",
+    nenhuma_aberta: "Nenhuma demanda aberta. A mesa está livre.", area_mais_cheia_tpl: "%s é a área mais cheia, com %s de %s demandas abertas.",
+
+    err_needs_reauth: "A conexão com o %s expirou. Reconecte em Configurações › Conectores.",
+    err_server_not_connected: "O %s não está conectado. Adicione em Configurações › Conectores.",
+    err_not_in_manifest: "Esta página não tem permissão para o %s.",
+    err_blocked_by_policy: "A organização bloqueou o %s aqui.",
+    err_server_unavailable: "O %s não respondeu agora. A mesa tenta de novo sozinha.",
+    err_not_granted: "A mesa precisa da sua permissão para ler o %s. Abra as permissões desta página.",
+    err_capability_disabled: "Esta visualização não lê o %s. Abra a mesa no claude.ai.",
+    err_fallback_tpl: "Não consegui ler o %s agora%s.",
+
+    agente_financeiro: "agente financeiro", conectado_so_consulta: "conectado · só consulta",
+    bento_nota: "Amélie só pergunta ao Bento (orçamento, gastos, disponibilidade) e repete o número que ele devolve — nunca registra nem edita nada das bases dele.",
+    nenhum_agente: "Nenhum outro agente conectado por enquanto.",
+
+    roda_form_canon_tpl: "%s de %s · de 1 (vazio) a 10 (pleno) · diga também por quê",
+    roda_audio_hint: "Prefere falar em vez de digitar? Mande um áudio pela Amélie no WhatsApp — sem limite de tamanho, ela transcreve e preenche aqui.",
+    por_que_placeholder: "por quê?", maior_necessidade_label: "Maior necessidade do mês",
+    mudar_nota_label: "O que você quer mudar para subir alguma nota? (opcional)", mudar_nota_placeholder: "ex: reservar mais tempo para X, retomar Y",
+    prioridade_mes_tpl: "Prioridade de %s (mês que vem)", prioridade_mes_placeholder: "o foco principal do próximo mês", salvar: "Salvar",
+
+    perfil_intro: "Quem você é, pra Amélie saber com quem está falando. Isto é informação sua — fica só no Notion, nunca no código deste painel.",
+    nome_label: "Nome", profissao_label: "Profissão", sobre_label: "O que a Amélie deve saber sobre você",
+    sobre_placeholder: "rotina, prioridades, particularidades — o que mais importa pra ela entender seu dia a dia",
+
+    menu_titulo: "Menu da Amélie", menu_sub: "O que ela é, quem você é pra ela, a quem está ligada, e a conversa deste mês",
+    menu_h_faz: "O que a Amélie faz",
+    menu_desc_faz: "Amélie é a secretária pessoal da Isabela: lê o que chega pelo WhatsApp, organiza a agenda e as tarefas entre o Google Agenda e o Notion, resolve sozinha os conflitos de horário dentro de um mesmo dia, manda os briefings diários, semanais, mensais e anuais, e conduz o fechamento mensal da Roda da Vida — sempre na mesma voz calma e discreta.",
+    menu_h_personalizacao: "Personalização", menu_h_agentes: "Agentes conectados", menu_h_historico: "Histórico por ano",
+    historico_desc_tpl: "Nenhum mês é apagado quando o ano vira. Escolha o ano aqui para ver os meses dele na barra do topo — toque num mês lá para abrir a Roda da Vida, o resumo e a autoavaliação daquele mês",
+    historico_desc_suf_atual: ", incluindo os já passados.", historico_desc_suf_outro: ".",
+    menu_h_avaliacao_tpl: "Avaliação da Roda da Vida — %s de %s", ano_ant_aria: "Ano anterior", ano_prox_aria: "Próximo ano",
+    menu_h_idioma: "Idioma", menu_idioma_desc: "A Amélie identifica o idioma de quem escreve e se adapta sozinha; use os botões só se ela tiver escolhido o idioma errado.",
+
+    item_nao_existe: "Este item não está mais na lista.",
+    field_tipo: "Tipo", field_roda: "Roda da Vida", field_projeto: "Projeto", field_lista: "Lista", field_status: "Status",
+    field_prazo: "Prazo", field_planejada: "Planejada", field_prioridade: "Prioridade", field_energia: "Energia", field_adiamentos: "Adiamentos",
+    atrasada_label: "Atrasada", marcar_concluida: "Marcar como concluída", reabrir_btn: "Reabrir", editar_btn: "Editar", abrir_notion: "Abrir no Notion", concluir_tpl: "Concluir: %s",
+    aria_hoje_mesa: "Hoje na mesa", aria_menu_pagina: "Menu da Amélie",
+
+    ev_nao_existe: "Este compromisso não está mais na agenda.",
+    field_dia: "Dia", field_horario: "Horário", field_agenda: "Agenda", field_local: "Local", field_pessoas: "Pessoas",
+    dia_todo: "o dia todo", horario_sep: " às ", bloco_flexivel: "bloco flexível", compromisso_fixo: "compromisso fixo",
+    entrar_chamada: "Entrar na chamada", abrir_agenda: "Abrir na agenda",
+
+    noticia_x_de_3_tpl: "Notícia %s de 3",
+
+    h_compromissos: "Compromissos", nada_marcado_agenda: "Nada marcado na agenda.", nada_aberto_aqui: "Nada aberto aqui.",
+    h_prazos_reais: "Prazos reais", nenhum_prazo_dia: "Nenhum prazo neste dia.", h_planejadas_dia: "Planejadas para o dia",
+
+    item_comprar_s: "item para comprar", item_comprar_p: "itens para comprar", sem_categoria: "Sem categoria",
+    demanda_aberta_s: "demanda aberta", demanda_aberta_p: "demandas abertas", nada_comprar: "Nada para comprar.", projeto_dot_tpl: "Projeto · %s",
+
+    h_notas_roda: "Notas da Roda da Vida",
+
+    mes_atual: "mês atual", mes_futuro: "mês futuro", mes_passado: "mês passado", media_mes_label: "Média do mês",
+    h_resumo_mes: "Resumo do mês", ainda_nao_gerado: "Ainda não gerado.", gerar_resumo_btn: "Gerar resumo do mês",
+    h_prioridade_mes: "Prioridade do mês", nao_definida: "Não foi definida.", ainda_nao_definida: "Ainda não definida.",
+    h_maior_necessidade: "Maior necessidade", h_por_que_notas: "Por que essas notas", h_mudancas: "Mudanças propostas",
+    notas_nao_lancadas: "Notas da Roda da Vida ainda não lançadas para este mês.", lancar_autoavaliacao: "Lançar ou corrigir a autoavaliação deste mês",
+
+    h_nota_amelie: "Nota da Amélie", lendo_registro: "A Amélie está lendo o registro…",
+    libere_claude: "Libere o Claude para esta página para ver a nota.", nao_consegui_nota: "Não consegui escrever a nota agora.",
+    h_anotacoes: "Anotações da página", buscando_anotacoes: "Buscando as anotações…",
+    nao_consegui_anotacoes: "Não consegui buscar as anotações agora.", sem_anotacoes: "Ainda não há anotações.",
+    h_editar: "Editar", field_observacao: "Observação", cancelar: "Cancelar",
+
+    toast_salvo_falta_nota: "Salvo — mas faltou nota em alguma área.", toast_salvo_falta_explicar: "Salvo — mas faltou explicar alguma nota.",
+    toast_notas_salvas: "Notas do mês salvas.", toast_erro_salvar_generico: "Não consegui salvar agora. Tente de novo.",
+    toast_sem_ia: "Resumo por IA não está disponível aqui agora.", toast_erro_resumo: "Não consegui gerar o resumo agora.",
+    toast_resumo_gerado: "Resumo do mês gerado.", toast_perfil_salvo: "Perfil salvo.", toast_erro_perfil: "Não consegui salvar o perfil agora.",
+    toast_nada_mudou: "Nada mudou.", toast_alteracoes_salvas: "Alterações salvas.",
+    toast_gravacao_nao_confirmou: "A gravação não confirmou. Confira antes de salvar de novo.",
+    toast_concluida_tpl: "Concluída: %s", toast_voltou_lista: "Voltou para a lista.",
+    toast_erro_desfazer: "Não consegui desfazer. Ajuste pela conversa com a Amélie.",
+    toast_notion_nao_confirmou: "O Notion não confirmou. Espere a próxima leitura antes de tentar de novo.",
+    toast_erro_marcar: "Não consegui marcar no Notion agora.", toast_reaberta_tpl: "Reaberta: %s", toast_erro_reabrir: "Não consegui reabrir agora.",
+    toast_sem_notion: "Sem acesso ao Notion nesta visualização.", toast_falta_nome: "Falta o nome.", toast_guardado_tpl: "Guardado: %s",
+    toast_notion_nao_confirmou_salvar: "O Notion não confirmou. Espere a próxima leitura e veja se entrou antes de salvar de novo.",
+    toast_erro_salvar_notion: "Não consegui salvar no Notion agora.", toast_sem_agenda: "Sem acesso à agenda nesta visualização.",
+    toast_diga_horas_fim: "Diga até que horas vai (campo Fim).", toast_fim_depois_inicio: "O fim precisa ser depois do início.",
+    toast_conflita_tpl: "Conflita com %s. Toque em “Pôr na agenda” de novo para criar mesmo assim.",
+    toast_erro_criar_evento: "Não consegui criar o evento agora.", toast_agenda_nao_confirmou: "A agenda não confirmou. Confira antes de tentar de novo.", toast_na_agenda_tpl: "Na agenda: %s, %s %s",
+    por_agenda_btn: "Pôr na agenda", descartar_btn: "Descartar", salvar_demandas_btn: "Salvar nas demandas",
+
+    anotando: "Anotando…", marcado_obrigada: "Marcado. Obrigada por avisar.", toast_erro_registrar: "Não consegui registrar agora. Tente de novo.",
+    precisa_claude: "Para organizar o recado, a mesa precisa do Claude, que não está liberado nesta visualização. Mande a anotação para a Amélie no chat.",
+    selado_organizando: "Selado. Organizando…", organizei_varios_tpl: "Organizei em %s registros. Confira e salve cada um.",
+    organizei_um: "Organizei assim. Confira e salve.", sem_notion_nao_salva: "Sem acesso ao Notion nesta visualização; não dá para salvar daqui.",
+    claude_nao_liberado: "O Claude não está liberado para esta página, então o recado não é organizado aqui.",
+    muitos_recados: "Muitos recados seguidos. Tente de novo em instantes.", nao_consegui_organizar: "Não consegui organizar esse recado. Tente escrever de outro jeito.",
+    vale_confirmar_tpl: "Vale confirmar: %s",
+
+    classificacao_label: "Classificação", inicio_label: "Início", fim_label: "Fim"
+  },
+  en: {
+    menu_label: "Menu", menu_abrir_aria: "Open Amélie's menu",
+    hoje: "Today", lendo_agenda: "reading the calendar…", prazos: "Deadlines", lendo: "Reading…",
+    mesa_de_bordo: "Dashboard", tese: "A calm page in the centre, the collage in the margins, and in each paper, a purpose.",
+    ir_noticias_aria: "Go to today's news", notas_label: "Notes", notas_placeholder: "to live\nin the here\nand\nnow",
+    recado_aria: "Write a note to Amélie", prioridades: "Priorities", urgencias: "urgent",
+    mesa_continua: "and the desk goes on…",
+    cap_i: "I · Note", cap_ii: "II · Comment", cap_iii: "III · World", cap_iv: "IV · Month", cap_v: "V · Pending", cap_vi: "VI · Ahead", cap_vii: "VII · Wheel of Life",
+    h_recado: "Tell Amélie", recado_desc: "Write it however it comes to you. When you touch the wax seal, she organises it into tasks and commitments for you to check before saving.",
+    capTexto_label: "Say it however it comes out", capTexto_placeholder: "Thursday I have a meeting at 3pm and need to read the document before…",
+    selar_title: "Seal and organise", selar_aria: "Seal and organise the note",
+    h_comentario: "What Amélie noticed", comentario_desc: "A short read of the moment and the quote of the week, which changes every Monday.",
+    papel_salvia: "Sage paper", lendo_dia: "Reading your day…",
+    h_noticias: "The three of the day", news_desc_suffix: ", crossed into a single read.", fontes_default: "El País · Folha · NYT", lendo_briefing: "Reading the briefing…",
+    h_mes: "The month's map", mapa_de: "The map for %s",
+    mes_desc: "Each dot is a commitment, coloured by its Wheel of Life area; a hollow dot is a flexible block or a planned task. A day with a real deadline sits on pink paper. Tap a day to see what it holds.",
+    mes_ant_tpl: "‹ %s", mes_prox_tpl: "%s ›", este_mes: "this month",
+    h_semana: "What was left behind", semana_desc: "Overdue deadlines and what depends on someone else.",
+    passou_prazo: "Past deadline", depende_outro: "Depends on someone else",
+    h_adiante: "The next seven days",
+    h_frentes: "How your life looks today", frentes_desc: "The Wheel of Life areas, with what's open in each one. Tap to see the items.",
+    roda_titulo: "Wheel of Life", roda_mes_tpl: "Wheel of Life · %s %s", atualizar_notas_mes: "Update this month's scores",
+    footer_frase: "Small things count too.", voltar_topo: "↑ back to the top of the desk", voltar_mesa: "← back to the desk",
+
+    dia_todo_curto: "day", nada_marcado_hoje: "nothing scheduled today", flexivel: "flexible",
+    nada_prioridade: "Nothing needs priority right now.", sem_urgencias: "No other urgent items.", urgente: "urgent",
+    grupo_hoje: "Today", grupo_semana: "This week", grupo_prox_semana: "Next week",
+    estudo_do_dia: "today's study block", vencido: "overdue", nenhum_prazo_2sem: "No real deadline in the next two weeks.",
+    compromisso_fixo_s: "fixed commitment", compromisso_fixo_p: "fixed commitments",
+    nenhum_prazo_hoje: "no deadline today", prazo_hoje_s: "deadline today", prazo_hoje_p: "deadlines today",
+    atrasada_s: "overdue", atrasada_p: "overdue", hoje_resumo_tpl: "Today: %s.",
+    hoje_rel: "today", amanha_rel: "tomorrow", ontem_rel: "yesterday",
+    prazo_era_tpl: "was due %s", prazo_hoje_curto: "due today", prazo_amanha: "due tomorrow", prazo_dow_tpl: "due %s", prazo_data_tpl: "due %s", planejada_tpl: "planned %s",
+
+    ainda_nao_li: "I haven't been able to read your tasks yet, so I'm saving the comment for later.",
+    nenhum_prazo_apertado: "No tight deadline in the next three days. It's a good week to move forward on what has no date.",
+    ja_passou_s: "is already past deadline", ja_passou_p: "are already past deadline",
+    vence_hoje_s: "is due today", vence_hoje_p: "are due today",
+    vence_3dias_s: "is due in the next three days", vence_3dias_p: "are due in the next three days",
+    ponto_um: "There's one point", pontos_n_tpl: "There are %s points", merece: "deserves your attention", merecem: "deserve your attention",
+    restante_pode_esperar: " The rest can wait.", concentra_tpl: " %s accounts for %s of the %s open tasks.",
+
+    briefing_de_tpl: "briefing from %s", nao_atualizado_hoje: " · not yet updated today",
+    briefing_nao_gerado: "Today's briefing hasn't been generated yet. It goes out every day at 06:52.",
+    por_que_importa: "Why it matters.", como_jornal_tratou: "How each paper covered it.", ler_na_fonte_tpl: "Read at the source (%s)",
+
+    semana_meta_tpl: "From %s to %s: commitments, real deadlines and what you planned.",
+    prazo_do_dia: "deadline today · ", prazo_dot: "deadline · ", planejada_dot: "planned · ", nada_anotado: "nothing noted",
+
+    compromisso_s: "commitment", compromisso_p: "commitments", prazo_s: "deadline", prazo_p: "deadlines",
+    tarefa_planejada_s: "planned task", tarefa_planejada_p: "planned tasks",
+    sem_area_titulo: "no area in the title", legenda_flexivel: "flexible, all-day, or planned", prazo_real: "real deadline",
+    ate_fim_mes: "By the end of the month", em_mes_tpl: "In %s",
+    ha_prazos_tpl: "%s there %s %s; the first is %s, %s.", nenhum_prazo_real_tpl: "No real deadline %s.",
+    prazo_real_s: "real deadline", prazo_real_p: "real deadlines",
+    semana_carregada_tpl: "The week of %s to %s is the busiest, with %s%s.", e_prazos_tpl: " and %s",
+    dia_segue_s: "day remains", dias_seguem_p: "days remain", nenhum_dia: "No day",
+    tem_compromisso_fixo: "has a fixed commitment.", sem_compromisso_fixo: "free of fixed commitments.",
+    feriado_s: "Holiday", feriado_p: "Holidays", agenda_longa: "This month's calendar is long; some commitments may not show up here.",
+    media_mes_resumo_tpl: "Month's average: %s.%s", nao_preenchida_mes: "Not filled in yet this month.",
+
+    nenhuma_atrasada: "No task is past its deadline.", nada_terceiros: "Nothing depends on someone else right now.", aguardando_label: "waiting on someone",
+
+    aberta_s: "open", aberta_p: "open", com_prazo_semana: " due this week", nada_aberto: "nothing open",
+    nenhuma_aberta: "No open tasks. The desk is clear.", area_mais_cheia_tpl: "%s is the fullest area, with %s of %s open tasks.",
+
+    err_needs_reauth: "The connection to %s expired. Reconnect in Settings › Connectors.",
+    err_server_not_connected: "%s isn't connected. Add it in Settings › Connectors.",
+    err_not_in_manifest: "This page doesn't have permission for %s.",
+    err_blocked_by_policy: "Your organisation has blocked %s here.",
+    err_server_unavailable: "%s didn't respond just now. The desk will try again on its own.",
+    err_not_granted: "The desk needs your permission to read %s. Open this page's permissions.",
+    err_capability_disabled: "This view doesn't read %s. Open the desk on claude.ai.",
+    err_fallback_tpl: "Couldn't read %s right now%s.",
+
+    agente_financeiro: "financial agent", conectado_so_consulta: "connected · read-only",
+    bento_nota: "Amélie only asks Bento (budget, spending, availability) and repeats the number it returns — she never logs or edits anything in his own records.",
+    nenhum_agente: "No other agent connected for now.",
+
+    roda_form_canon_tpl: "%s %s · from 1 (empty) to 10 (full) · say why too",
+    roda_audio_hint: "Prefer to talk instead of type? Send Amélie a voice note on WhatsApp — no length limit, she transcribes and fills this in.",
+    por_que_placeholder: "why?", maior_necessidade_label: "Biggest need this month",
+    mudar_nota_label: "What would you change to raise a score? (optional)", mudar_nota_placeholder: "e.g.: set aside more time for X, pick Y back up",
+    prioridade_mes_tpl: "Priority for %s (next month)", prioridade_mes_placeholder: "the main focus for next month", salvar: "Save",
+
+    perfil_intro: "Who you are, so Amélie knows who she's talking to. This is your information — it stays only in Notion, never in this panel's code.",
+    nome_label: "Name", profissao_label: "Occupation", sobre_label: "What Amélie should know about you",
+    sobre_placeholder: "routine, priorities, quirks — whatever matters most for her to understand your day-to-day",
+
+    menu_titulo: "Amélie's menu", menu_sub: "What she is, who you are to her, who she's connected to, and this month's conversation",
+    menu_h_faz: "What Amélie does",
+    menu_desc_faz: "Amélie is Isabela's personal secretary: she reads what comes in on WhatsApp, organises the calendar and tasks between Google Calendar and Notion, resolves same-day schedule conflicts on her own, sends the daily, weekly, monthly and yearly briefings, and runs the monthly Wheel-of-Life closing — always in the same calm, discreet voice.",
+    menu_h_personalizacao: "Personalisation", menu_h_agentes: "Connected agents", menu_h_historico: "History by year",
+    historico_desc_tpl: "No month is ever deleted when the year turns. Pick a year here to see its months in the bar at the top — tap a month there to open its Wheel of Life, summary and self-assessment",
+    historico_desc_suf_atual: ", including past ones.", historico_desc_suf_outro: ".",
+    menu_h_avaliacao_tpl: "Wheel of Life assessment — %s %s", ano_ant_aria: "Previous year", ano_prox_aria: "Next year",
+    menu_h_idioma: "Language", menu_idioma_desc: "Amélie detects the language of whoever is writing and adapts on her own; use these buttons only if she picked the wrong one.",
+
+    item_nao_existe: "This item is no longer on the list.",
+    field_tipo: "Type", field_roda: "Wheel of Life", field_projeto: "Project", field_lista: "List", field_status: "Status",
+    field_prazo: "Deadline", field_planejada: "Planned", field_prioridade: "Priority", field_energia: "Energy", field_adiamentos: "Times postponed",
+    atrasada_label: "Overdue", marcar_concluida: "Mark as done", reabrir_btn: "Reopen", editar_btn: "Edit", abrir_notion: "Open in Notion", concluir_tpl: "Mark done: %s",
+    aria_hoje_mesa: "Today on the desk", aria_menu_pagina: "Amélie's menu",
+
+    ev_nao_existe: "This commitment is no longer on the calendar.",
+    field_dia: "Day", field_horario: "Time", field_agenda: "Calendar", field_local: "Location", field_pessoas: "People",
+    dia_todo: "all day", horario_sep: " to ", bloco_flexivel: "flexible block", compromisso_fixo: "fixed commitment",
+    entrar_chamada: "Join the call", abrir_agenda: "Open in calendar",
+
+    noticia_x_de_3_tpl: "News %s of 3",
+
+    h_compromissos: "Commitments", nada_marcado_agenda: "Nothing on the calendar.", nada_aberto_aqui: "Nothing open here.",
+    h_prazos_reais: "Real deadlines", nenhum_prazo_dia: "No deadline this day.", h_planejadas_dia: "Planned for the day",
+
+    item_comprar_s: "item to buy", item_comprar_p: "items to buy", sem_categoria: "No category",
+    demanda_aberta_s: "open task", demanda_aberta_p: "open tasks", nada_comprar: "Nothing to buy.", projeto_dot_tpl: "Project · %s",
+
+    h_notas_roda: "Wheel of Life scores",
+
+    mes_atual: "current month", mes_futuro: "future month", mes_passado: "past month", media_mes_label: "Month's average",
+    h_resumo_mes: "Month summary", ainda_nao_gerado: "Not generated yet.", gerar_resumo_btn: "Generate month summary",
+    h_prioridade_mes: "Priority for the month", nao_definida: "Not set.", ainda_nao_definida: "Not set yet.",
+    h_maior_necessidade: "Biggest need", h_por_que_notas: "Why these scores", h_mudancas: "Proposed changes",
+    notas_nao_lancadas: "Wheel of Life scores haven't been entered for this month yet.", lancar_autoavaliacao: "Enter or fix this month's self-assessment",
+
+    h_nota_amelie: "Amélie's note", lendo_registro: "Amélie is reading the record…",
+    libere_claude: "Grant Claude access to this page to see the note.", nao_consegui_nota: "Couldn't write the note right now.",
+    h_anotacoes: "Page notes", buscando_anotacoes: "Fetching the notes…",
+    nao_consegui_anotacoes: "Couldn't fetch the notes right now.", sem_anotacoes: "No notes yet.",
+    h_editar: "Edit", field_observacao: "Note", cancelar: "Cancel",
+
+    toast_salvo_falta_nota: "Saved — but a score is missing in some area.", toast_salvo_falta_explicar: "Saved — but a reason is missing for some score.",
+    toast_notas_salvas: "This month's scores saved.", toast_erro_salvar_generico: "Couldn't save right now. Try again.",
+    toast_sem_ia: "AI summaries aren't available here right now.", toast_erro_resumo: "Couldn't generate the summary right now.",
+    toast_resumo_gerado: "Month summary generated.", toast_perfil_salvo: "Profile saved.", toast_erro_perfil: "Couldn't save the profile right now.",
+    toast_nada_mudou: "Nothing changed.", toast_alteracoes_salvas: "Changes saved.",
+    toast_gravacao_nao_confirmou: "The save wasn't confirmed. Check before saving again.",
+    toast_concluida_tpl: "Done: %s", toast_voltou_lista: "Back on the list.",
+    toast_erro_desfazer: "Couldn't undo that. Adjust it by talking to Amélie.",
+    toast_notion_nao_confirmou: "Notion didn't confirm. Wait for the next read before trying again.",
+    toast_erro_marcar: "Couldn't mark it in Notion right now.", toast_reaberta_tpl: "Reopened: %s", toast_erro_reabrir: "Couldn't reopen it right now.",
+    toast_sem_notion: "No Notion access in this view.", toast_falta_nome: "The name is missing.", toast_guardado_tpl: "Saved: %s",
+    toast_notion_nao_confirmou_salvar: "Notion didn't confirm. Wait for the next read and check it went through before saving again.",
+    toast_erro_salvar_notion: "Couldn't save to Notion right now.", toast_sem_agenda: "No calendar access in this view.",
+    toast_diga_horas_fim: "Say what time it ends (End field).", toast_fim_depois_inicio: "The end has to be after the start.",
+    toast_conflita_tpl: "Clashes with %s. Tap “Put on calendar” again to create it anyway.",
+    toast_erro_criar_evento: "Couldn't create the event right now.", toast_agenda_nao_confirmou: "The calendar didn't confirm. Check before trying again.", toast_na_agenda_tpl: "On the calendar: %s, %s %s",
+    por_agenda_btn: "Put on calendar", descartar_btn: "Discard", salvar_demandas_btn: "Save to tasks",
+
+    anotando: "Noting it down…", marcado_obrigada: "Noted. Thanks for telling me.", toast_erro_registrar: "Couldn't log it right now. Try again.",
+    precisa_claude: "To organise the note, the desk needs Claude, which isn't enabled in this view. Send the note to Amélie in chat instead.",
+    selado_organizando: "Sealed. Organising…", organizei_varios_tpl: "I organised this into %s records. Check and save each one.",
+    organizei_um: "I organised it like this. Check and save it.", sem_notion_nao_salva: "No Notion access in this view; can't save from here.",
+    claude_nao_liberado: "Claude isn't enabled for this page, so the note can't be organised here.",
+    muitos_recados: "Too many notes in a row. Try again in a moment.", nao_consegui_organizar: "Couldn't organise that note. Try writing it a different way.",
+    vale_confirmar_tpl: "Worth confirming: %s",
+
+    classificacao_label: "Classification", inicio_label: "Start", fim_label: "End"
+  }
+};
+const t = k => { const v = (DICT[LANG] && DICT[LANG][k] !== undefined) ? DICT[LANG][k] : DICT.pt[k]; return v !== undefined ? v : k; };
+const tf = (k, ...args) => { let s = t(k); args.forEach(a => { s = s.replace("%s", a); }); return s; };
+function setLang(l) {
+  if (l !== "pt" && l !== "en") return;
+  LANG = l; try { localStorage.setItem("amelie_lang", l); } catch {}
+  aplicarIdiomaDeDatas(); traduzEstatico(); renderAll();
+  if (aberto) renderSolta();
+  if ($("paginaMenu") && !$("paginaMenu").hidden) montarPaginaMenu();
+}
+
 const DONE = "✅ Concluída", CANCEL = "🗑️ Cancelada", WAIT = "⏸️ Aguardando", PROG = "🔄 Em andamento";
 const TASK_LISTS = ["✅ Afazeres", "📌 Pendências"];
 /* Roda da Vida: valor gravado no Notion (campo "Roda da Vida") → rótulo, cor do quadrante e ilustração da identidade v3 */
@@ -583,6 +924,14 @@ const FR = {
   "🌼 Plenitude e felicidade":       { label: "Plenitude e felicidade",       cor: "var(--mostarda)",img: "beija-flor.webp" },
   "🎉 Lazer e diversão":             { label: "Lazer e diversão",             cor: "var(--mostarda)",img: "selo-postal.png" }
 };
+/* rótulos em inglês das 12 áreas — a CHAVE gravada no Notion (ex. "🔵 Contribuição social") nunca muda; só o texto exibido. */
+const FR_LABEL_EN = {
+  "🔵 Contribuição social": "Social contribution", "🔷 Finanças e bens": "Finances & assets", "🩵 Realização e propósito": "Fulfilment & purpose",
+  "🟢 Saúde e disposição": "Health & energy", "🌿 Desenvolvimento do intelecto": "Intellectual growth", "🍀 Equilíbrio emocional": "Emotional balance",
+  "🩷 Família": "Family", "💗 Relacionamentos amorosos": "Romantic relationships", "💞 Vida social": "Social life",
+  "🟡 Espiritualidade": "Spirituality", "🌼 Plenitude e felicidade": "Fulfilment & joy", "🎉 Lazer e diversão": "Leisure & fun"
+};
+const frLabel = f => FR[f] ? (LANG === "en" ? (FR_LABEL_EN[f] || FR[f].label) : FR[f].label) : "";
 const inFr = (i, f) => i.frente === f;
 const relevante = i => isOpen(i) && i.lista !== "📚 Livros" &&
   (i.lista !== "🗓️ Agenda" || (i.quando && diff(TODAY, i.quando) >= 0 && !["Rotina","Compromisso","Aula","Tarefa"].includes(i.tipo)));
@@ -593,11 +942,23 @@ const PRIOS = ["P01","P02","P03","P04","P05"];
 const ENERGIAS = ["⚡ Alta","🔋 Média","🪫 Baixa"];
 const CLASSES = ["FDV","Trabalho","Carreira","Política","Projeto","Pessoal","Social","Saúde","Administrativo","Viagem"];
 const CATS_COMPRA = ["🥦 Mercado","📚 Livro","👗 Roupa","📦 Outros"];
-const DOW = ["dom","seg","ter","qua","qui","sex","sáb"];
-const DOW_LONG = ["domingo","segunda-feira","terça-feira","quarta-feira","quinta-feira","sexta-feira","sábado"];
-const MON = ["janeiro","fevereiro","março","abril","maio","junho","julho","agosto","setembro","outubro","novembro","dezembro"];
-/* frase da semana: grandes escritores, texto verificável, troca toda segunda */
-const QUOTES = [
+/* nomes de dia/mês e abreviações do mês: só exibição, nunca gravados no Notion — por isso têm par em inglês */
+const DOW_PT = ["dom","seg","ter","qua","qui","sex","sáb"];
+const DOW_EN = ["sun","mon","tue","wed","thu","fri","sat"];
+const DOW_LONG_PT = ["domingo","segunda-feira","terça-feira","quarta-feira","quinta-feira","sexta-feira","sábado"];
+const DOW_LONG_EN = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
+const MON_PT = ["janeiro","fevereiro","março","abril","maio","junho","julho","agosto","setembro","outubro","novembro","dezembro"];
+const MON_EN = ["January","February","March","April","May","June","July","August","September","October","November","December"];
+const MES_ABR_PT = ["jan","fev","mar","abr","mai","jun","jul","ago","set","out","nov","dez"];
+const MES_ABR_EN = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+let DOW, DOW_LONG, MON, MES_ABR;
+function aplicarIdiomaDeDatas() {
+  DOW = LANG === "en" ? DOW_EN : DOW_PT; DOW_LONG = LANG === "en" ? DOW_LONG_EN : DOW_LONG_PT;
+  MON = LANG === "en" ? MON_EN : MON_PT; MES_ABR = LANG === "en" ? MES_ABR_EN : MES_ABR_PT;
+}
+aplicarIdiomaDeDatas();
+/* frase da semana: grandes escritores, texto verificável, troca toda segunda — par em inglês pra quem usa a mesa em inglês */
+const QUOTES_PT = [
   { q: "Matamos o tempo; o tempo nos enterra.", a: "Machado de Assis", o: "Memórias Póstumas de Brás Cubas" },
   { q: "O sertanejo é, antes de tudo, um forte.", a: "Euclides da Cunha", o: "Os Sertões" },
   { q: "Ora (direis) ouvir estrelas!", a: "Olavo Bilac", o: "Via Láctea, soneto XIII" },
@@ -607,10 +968,33 @@ const QUOTES = [
   { q: "A mão que afaga é a mesma que apedreja.", a: "Augusto dos Anjos", o: "Versos Íntimos" },
   { q: "Meninos, eu vi!", a: "Gonçalves Dias", o: "I-Juca Pirama" }
 ];
+const QUOTES_EN = [
+  { q: "It was the best of times, it was the worst of times.", a: "Charles Dickens", o: "A Tale of Two Cities" },
+  { q: "It is a truth universally acknowledged, that a single man in possession of a good fortune must be in want of a wife.", a: "Jane Austen", o: "Pride and Prejudice" },
+  { q: "Call me Ishmael.", a: "Herman Melville", o: "Moby-Dick" },
+  { q: "“Hope” is the thing with feathers / That perches in the soul.", a: "Emily Dickinson", o: "Poem 254" },
+  { q: "I celebrate myself, and sing myself.", a: "Walt Whitman", o: "Song of Myself" },
+  { q: "Nothing is so painful to the human mind as a great and sudden change.", a: "Mary Shelley", o: "Frankenstein" },
+  { q: "Not all those who wander are lost.", a: "J.R.R. Tolkien", o: "The Fellowship of the Ring" },
+  { q: "I am no bird; and no net ensnares me: I am a free human being with an independent will.", a: "Charlotte Brontë", o: "Jane Eyre" }
+];
 
 const $ = id => document.getElementById(id);
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const plain = s => String(s || "").replace(/^\S+\s/, "");
+/* exibição em inglês dos valores fixos do Notion (Status/Lista/Tipo/Energia/Categoria) — o valor gravado nunca muda, só a palavra mostrada. */
+const WORD_EN = {
+  "Inbox": "Inbox", "A fazer": "To do", "Em andamento": "In progress", "Aguardando": "Waiting", "Concluída": "Done", "Cancelada": "Cancelled",
+  "Afazeres": "To-dos", "Pendências": "Pending", "Compras": "Shopping", "Lista de Desejos": "Wishlist", "Ideias": "Ideas", "Livros": "Books",
+  "Tarefa": "Task", "Compromisso": "Commitment", "Reunião": "Meeting", "Evento": "Event", "Prazo": "Deadline", "Lembrete": "Reminder", "Rotina": "Routine",
+  "Candidatura": "Application", "Curso": "Course", "Entrega": "Delivery", "Documento": "Document", "Controle": "Control", "Pagamento": "Payment",
+  "Reserva": "Booking", "Leitura": "Reading", "Compra": "Purchase", "Aula": "Class", "Consulta": "Appointment",
+  "Alta": "High", "Média": "Medium", "Baixa": "Low",
+  "Trabalho": "Work", "Carreira": "Career", "Política": "Politics", "Projeto": "Project", "Pessoal": "Personal", "Saúde": "Health", "Administrativo": "Administrative", "Viagem": "Travel",
+  "Mercado": "Groceries", "Livro": "Book", "Roupa": "Clothes", "Outros": "Other"
+};
+const dispWord = v => { if (!v) return ""; const w = plain(v); return LANG === "en" ? (WORD_EN[w] || w) : w; };
+const dispFull = v => { if (!v) return ""; if (LANG !== "en") return v; const m = v.match(/^(\S+\s)/); const emoji = m ? m[1] : ""; return emoji + (WORD_EN[plain(v)] || plain(v)); };
 const normTxt = s => String(s || "").toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "");
 
 /* ---------- datas em São Paulo ---------- */
@@ -626,7 +1010,7 @@ const br = s => { const [, m, d] = s.split("-"); return `${d}/${m}`; };
 const brFull = s => { const [y, m, d] = s.split("-"); return `${d}/${m}/${y}`; };
 const minutesOf = d => { const [h, m] = fmtTime.format(d).split(":").map(Number); return h * 60 + m; };
 let TODAY = spDay(new Date());
-const relLabel = s => { const n = diff(TODAY, s); if (n === 0) return "hoje"; if (n === 1) return "amanhã"; if (n === -1) return "ontem"; if (n > 1 && n < 7) return `${DOW[dowOf(s)]} ${br(s)}`; return br(s); };
+const relLabel = s => { const n = diff(TODAY, s); if (n === 0) return t("hoje_rel"); if (n === 1) return t("amanha_rel"); if (n === -1) return t("ontem_rel"); if (n > 1 && n < 7) return `${DOW[dowOf(s)]} ${br(s)}`; return br(s); };
 const plural = (n, a, b) => `${n} ${n === 1 ? a : b}`;
 
 /* ---------- estado ---------- */
@@ -663,9 +1047,9 @@ function score(i) {
   return s;
 }
 function quandoTxt(i) {
-  if (isLate(i)) return `<span class="late">prazo era ${relLabel(i.prazo)}</span>`;
-  if (i.prazo) { const n = diff(TODAY, i.prazo); return n === 0 ? "prazo hoje" : n === 1 ? "prazo amanhã" : n < 7 ? `prazo ${DOW_LONG[dowOf(i.prazo)].split("-")[0]}` : `prazo ${br(i.prazo)}`; }
-  if (i.plan) return `planejada ${relLabel(i.plan)}`;
+  if (isLate(i)) return `<span class="late">${tf("prazo_era_tpl", relLabel(i.prazo))}</span>`;
+  if (i.prazo) { const n = diff(TODAY, i.prazo); return n === 0 ? t("prazo_hoje_curto") : n === 1 ? t("prazo_amanha") : n < 7 ? tf("prazo_dow_tpl", DOW_LONG[dowOf(i.prazo)].split("-")[0]) : tf("prazo_data_tpl", br(i.prazo)); }
+  if (i.plan) return tf("planejada_tpl", relLabel(i.plan));
   return "";
 }
 
@@ -696,93 +1080,91 @@ const estudosDo = day => eventsOn(day).filter(e => isEstudo(e) && !e.title.inclu
 function errTxt(e, server) {
   const c = e && e.code;
   const m = {
-    needs_reauth: `A conexão com o ${server} expirou. Reconecte em Configurações › Conectores.`,
-    server_not_connected: `O ${server} não está conectado. Adicione em Configurações › Conectores.`,
-    not_in_manifest: `Esta página não tem permissão para o ${server}.`,
-    blocked_by_policy: `A organização bloqueou o ${server} aqui.`,
-    server_unavailable: `O ${server} não respondeu agora. A mesa tenta de novo sozinha.`,
-    not_granted: `A mesa precisa da sua permissão para ler o ${server}. Abra as permissões desta página.`,
-    capability_disabled: `Esta visualização não lê o ${server}. Abra a mesa no claude.ai.`
+    needs_reauth: tf("err_needs_reauth", server), server_not_connected: tf("err_server_not_connected", server),
+    not_in_manifest: tf("err_not_in_manifest", server), blocked_by_policy: tf("err_blocked_by_policy", server),
+    server_unavailable: tf("err_server_unavailable", server), not_granted: tf("err_not_granted", server),
+    capability_disabled: tf("err_capability_disabled", server)
   };
-  return `<p class="aviso-cx">${esc(m[c] || `Não consegui ler o ${server} agora${c ? ` (${c})` : ""}.`)}</p>`;
+  return `<p class="aviso-cx">${esc(m[c] || tf("err_fallback_tpl", server, c ? ` (${c})` : ""))}</p>`;
 }
 
 /* ---------- peças ---------- */
 const itemBtn = (i, txt) => `<button type="button" class="btn-l" data-item="${esc(i.id || i.name)}">${esc(txt ?? i.name)}</button>`;
 const evBtn = (e, txt) => `<button type="button" class="btn-l" data-ev="${esc(e.id)}">${esc(txt ?? e.short)}</button>`;
 function itemRow(i, chk = true) {
-  const meta = [FR[i.frente] ? FR[i.frente].label : "", quandoTxt(i), i.status === WAIT ? "aguardando" : ""].filter(Boolean).join(" · ");
+  const meta = [frLabel(i.frente), quandoTxt(i), i.status === WAIT ? t("aguardando_label") : ""].filter(Boolean).join(" · ");
   const dis = !mcp || !i.id || S.busy.has(i.id);
-  return `<li class="item${chk ? "" : " sem"}">${chk ? `<button type="button" class="caixa" data-done="${esc(i.id || "")}" aria-label="Concluir: ${esc(i.name)}" ${dis ? "disabled" : ""}></button>` : ""}<div style="min-width:0">${itemBtn(i)}${meta ? `<small>${meta}</small>` : ""}</div></li>`;
+  return `<li class="item${chk ? "" : " sem"}">${chk ? `<button type="button" class="caixa" data-done="${esc(i.id || "")}" aria-label="${esc(tf('concluir_tpl', i.name))}" ${dis ? "disabled" : ""}></button>` : ""}<div style="min-width:0">${itemBtn(i)}${meta ? `<small>${meta}</small>` : ""}</div></li>`;
 }
 
 /* ---------- TOPO ---------- */
 function renderTopo() {
   const d = TODAY.split("-");
-  $("sobre").textContent = `Mesa de bordo · ${DOW_LONG[dowOf(TODAY)].split("-")[0]}, ${Number(d[2])} de ${MON[+d[1] - 1]}`;
-  $("agendaTit").textContent = `Hoje, ${DOW_LONG[dowOf(TODAY)].split("-")[0]}`;
+  $("sobre").textContent = `${t("mesa_de_bordo")} · ${DOW_LONG[dowOf(TODAY)].split("-")[0]}, ${diaDeMes(Number(d[2]), +d[1] - 1)}`;
+  $("agendaTit").textContent = `${t("hoje")}, ${DOW_LONG[dowOf(TODAY)].split("-")[0]}`;
   // agenda hora a hora
   const ag = $("agenda");
-  if (!evOk()) ag.innerHTML = S.evErr.primary ? `<li style="display:block">${errTxt(S.evErr.primary, G)}</li>` : `<li><span class="h">—</span><span class="t">lendo a agenda…</span></li>`;
+  if (!evOk()) ag.innerHTML = S.evErr.primary ? `<li style="display:block">${errTxt(S.evErr.primary, G)}</li>` : `<li><span class="h">—</span><span class="t">${t("lendo_agenda")}</span></li>`;
   else {
     const now = minutesOf(new Date());
     const evs = eventsOn(TODAY).filter(e => !e.holiday);
     const fer = eventsOn(TODAY).filter(e => e.holiday);
-    ag.innerHTML = (fer.length ? `<li><span class="h">dia</span><span class="t">${esc(fer.map(e => e.title).join(", "))}</span></li>` : "") +
+    ag.innerHTML = (fer.length ? `<li><span class="h">${t("dia_todo_curto")}</span><span class="t">${esc(fer.map(e => e.title).join(", "))}</span></li>` : "") +
       (evs.length ? evs.map(e => {
         const past = !e.allDay && e.endDay === TODAY && minutesOf(e.end) <= now, agora = !e.allDay && minutesOf(e.start) <= now && (e.endDay !== TODAY || minutesOf(e.end) > now);
-        return `<li class="${past ? "passou" : ""}${agora ? " agora" : ""}"><span class="h">${e.allDay ? "dia" : fmtTime.format(e.start)}</span><span class="t">${evBtn(e)}${e.flex ? ` <span class="fx">flexível</span>` : ""}</span></li>`;
-      }).join("") : `<li><span class="h">—</span><span class="t">nada marcado hoje</span></li>`);
+        return `<li class="${past ? "passou" : ""}${agora ? " agora" : ""}"><span class="h">${e.allDay ? t("dia_todo_curto") : fmtTime.format(e.start)}</span><span class="t">${evBtn(e)}${e.flex ? ` <span class="fx">${t("flexivel")}</span>` : ""}</span></li>`;
+      }).join("") : `<li><span class="h">—</span><span class="t">${t("nada_marcado_hoje")}</span></li>`);
   }
   // prioridades (as 3 mais urgentes pela regra) e urgências
   const pr = $("prioridades"), ur = $("urgencias");
-  if (!S.items) { const m = S.itemsErr ? errTxt(S.itemsErr, N).replace("aviso-cx", "vazio") : `<span class="vazio">Lendo…</span>`; pr.innerHTML = `<li>${m}</li>`; ur.innerHTML = ""; }
+  if (!S.items) { const m = S.itemsErr ? errTxt(S.itemsErr, N).replace("aviso-cx", "vazio") : `<span class="vazio">${t("lendo")}</span>`; pr.innerHTML = `<li>${m}</li>`; ur.innerHTML = ""; }
   else {
     const top = tarefas().map(i => [i, score(i)]).filter(x => x[1] > 0).sort((a, b) => b[1] - a[1]).slice(0, 3).map(x => x[0]);
-    pr.innerHTML = top.length ? top.map(i => `<li><div>${itemBtn(i, i.parts[0] + (i.parts[1] ? " " + i.parts[1] : ""))}${quandoTxt(i) ? `<small>${quandoTxt(i).replace(/<[^>]+>/g, "")}</small>` : ""}</div></li>`).join("") : `<li><span class="vazio">Nada pede prioridade agora.</span></li>`;
+    pr.innerHTML = top.length ? top.map(i => `<li><div>${itemBtn(i, i.parts[0] + (i.parts[1] ? " " + i.parts[1] : ""))}${quandoTxt(i) ? `<small>${quandoTxt(i).replace(/<[^>]+>/g, "")}</small>` : ""}</div></li>`).join("") : `<li><span class="vazio">${t("nada_prioridade")}</span></li>`;
     const urg = tarefas().filter(i => i.status !== WAIT && !top.includes(i) && (i.prio === "P01" || isLate(i) || (i.prazo && diff(TODAY, i.prazo) <= 2)))
       .sort((a, b) => (a.prazo || "9").localeCompare(b.prazo || "9")).slice(0, 4);
-    ur.innerHTML = urg.length ? urg.map(i => `<li><div>${itemBtn(i, i.parts[0] + (i.parts[1] ? " " + i.parts[1] : ""))}<small>${(quandoTxt(i) || "urgente").replace(/<[^>]+>/g, "")}</small></div></li>`).join("") : `<li><span class="vazio">Sem outras urgências.</span></li>`;
+    ur.innerHTML = urg.length ? urg.map(i => `<li><div>${itemBtn(i, i.parts[0] + (i.parts[1] ? " " + i.parts[1] : ""))}<small>${(quandoTxt(i) || t("urgente")).replace(/<[^>]+>/g, "")}</small></div></li>`).join("") : `<li><span class="vazio">${t("sem_urgencias")}</span></li>`;
   }
   // prazos reais: hoje · esta semana · próxima semana
   const pz = $("prazos");
-  if (!S.items) pz.innerHTML = S.itemsErr ? errTxt(S.itemsErr, N) : `<p class="vazio">Lendo…</p>`;
+  if (!S.items) pz.innerHTML = S.itemsErr ? errTxt(S.itemsErr, N) : `<p class="vazio">${t("lendo")}</p>`;
   else {
     const fimSemana = addDays(TODAY, (7 - dowOf(TODAY)) % 7), fimProx = addDays(fimSemana, 7);
     const com = tarefas().filter(i => i.prazo && i.prazo <= fimProx).sort((a, b) => a.prazo.localeCompare(b.prazo));
-    const grupos = [["Hoje", com.filter(i => i.prazo <= TODAY)], ["Esta semana", com.filter(i => i.prazo > TODAY && i.prazo <= fimSemana)], ["Próx. semana", com.filter(i => i.prazo > fimSemana)]];
+    const grupos = [[t("grupo_hoje"), com.filter(i => i.prazo <= TODAY)], [t("grupo_semana"), com.filter(i => i.prazo > TODAY && i.prazo <= fimSemana)], [t("grupo_prox_semana"), com.filter(i => i.prazo > fimSemana)]];
     const estHoje = evOk() ? estudosDo(TODAY) : [];
-    const estHtml = estHoje.map(e => `<div>${evBtn(e, e.short)}<br><small>${DOW[dowOf(TODAY)].toUpperCase()} ${br(TODAY)} · estudo do dia</small></div>`).join("");
-    pz.innerHTML = grupos.filter(g => g[1].length || (g[0] === "Hoje" && estHoje.length)).map(([t, l]) => `<div class="pz"><b>${t.toUpperCase()}</b>${t === "Hoje" ? estHtml : ""}${l.map(i => `<div>${itemBtn(i)}<br><small>${DOW[dowOf(i.prazo)].toUpperCase()} ${br(i.prazo)}${isLate(i) ? " · vencido" : ""}</small></div>`).join("")}</div>`).join("") || `<p class="vazio">Nenhum prazo real nas próximas duas semanas.</p>`;
+    const estHtml = estHoje.map(e => `<div>${evBtn(e, e.short)}<br><small>${DOW[dowOf(TODAY)].toUpperCase()} ${br(TODAY)} · ${t("estudo_do_dia")}</small></div>`).join("");
+    pz.innerHTML = grupos.filter(g => g[1].length || (g[0] === t("grupo_hoje") && estHoje.length)).map(([grp, l]) => `<div class="pz"><b>${grp.toUpperCase()}</b>${grp === t("grupo_hoje") ? estHtml : ""}${l.map(i => `<div>${itemBtn(i)}<br><small>${DOW[dowOf(i.prazo)].toUpperCase()} ${br(i.prazo)}${isLate(i) ? " · " + t("vencido") : ""}</small></div>`).join("")}</div>`).join("") || `<p class="vazio">${t("nenhum_prazo_2sem")}</p>`;
   }
   // resumo do dia
   const bits = [];
-  if (evOk()) bits.push(plural(eventsOn(TODAY).filter(e => !e.holiday && !e.allDay && !e.flex).length, "compromisso fixo", "compromissos fixos"));
-  if (S.items) { const h = tarefas().filter(i => i.prazo === TODAY).length + (evOk() ? estudosDo(TODAY).length : 0), l = tarefas().filter(isLate).length; bits.push(h ? plural(h, "prazo hoje", "prazos hoje") : "nenhum prazo hoje"); if (l) bits.push(plural(l, "atrasada", "atrasadas")); }
-  $("resumo").textContent = bits.length ? `Hoje: ${bits.join(" · ")}.` : "";
+  if (evOk()) bits.push(plural(eventsOn(TODAY).filter(e => !e.holiday && !e.allDay && !e.flex).length, t("compromisso_fixo_s"), t("compromisso_fixo_p")));
+  if (S.items) { const h = tarefas().filter(i => i.prazo === TODAY).length + (evOk() ? estudosDo(TODAY).length : 0), l = tarefas().filter(isLate).length; bits.push(h ? plural(h, t("prazo_hoje_s"), t("prazo_hoje_p")) : t("nenhum_prazo_hoje")); if (l) bits.push(plural(l, t("atrasada_s"), t("atrasada_p"))); }
+  $("resumo").textContent = bits.length ? tf("hoje_resumo_tpl", bits.join(" · ")) : "";
 }
 
 /* ---------- comentário + frase ---------- */
 function renderComentario() {
   const sem = Math.floor(diff("2026-01-05", TODAY) / 7);
-  const x = QUOTES[((sem % QUOTES.length) + QUOTES.length) % QUOTES.length];
+  const QQ = LANG === "en" ? QUOTES_EN : QUOTES_PT;
+  const x = QQ[((sem % QQ.length) + QQ.length) % QQ.length];
   $("frase").innerHTML = `“${esc(x.q)}”<cite>${esc(x.a)} · ${esc(x.o)}</cite>`;
-  if (!S.items) { $("comentario").textContent = S.itemsErr ? "Ainda não consegui ler suas demandas, então guardo o comentário para depois." : "Lendo o seu dia…"; return; }
-  const t = tarefas(), late = t.filter(isLate).length, hoje = t.filter(i => i.prazo === TODAY).length;
-  const prox = t.filter(i => i.prazo && diff(TODAY, i.prazo) >= 1 && diff(TODAY, i.prazo) <= 3).length;
+  if (!S.items) { $("comentario").textContent = S.itemsErr ? t("ainda_nao_li") : t("lendo_dia"); return; }
+  const tas = tarefas(), late = tas.filter(isLate).length, hoje = tas.filter(i => i.prazo === TODAY).length;
+  const prox = tas.filter(i => i.prazo && diff(TODAY, i.prazo) >= 1 && diff(TODAY, i.prazo) <= 3).length;
   const pontos = late + hoje + prox;
   let txt;
-  if (!pontos) txt = "Nenhum prazo apertado nos próximos três dias. É uma boa semana para avançar no que não tem data.";
+  if (!pontos) txt = t("nenhum_prazo_apertado");
   else {
     const p = [];
-    if (late) p.push(plural(late, "já passou do prazo", "já passaram do prazo"));
-    if (hoje) p.push(plural(hoje, "vence hoje", "vencem hoje"));
-    if (prox) p.push(plural(prox, "vence nos próximos três dias", "vencem nos próximos três dias"));
-    txt = `${pontos === 1 ? "Há um ponto" : `Há ${pontos} pontos`} que ${pontos === 1 ? "merece" : "merecem"} sua atenção: ${p.join(", ")}. O restante pode esperar.`;
+    if (late) p.push(plural(late, t("ja_passou_s"), t("ja_passou_p")));
+    if (hoje) p.push(plural(hoje, t("vence_hoje_s"), t("vence_hoje_p")));
+    if (prox) p.push(plural(prox, t("vence_3dias_s"), t("vence_3dias_p")));
+    txt = `${pontos === 1 ? t("ponto_um") : tf("pontos_n_tpl", pontos)} ${pontos === 1 ? t("merece") : t("merecem")}: ${p.join(", ")}.${t("restante_pode_esperar")}`;
   }
-  const cont = {}; t.forEach(i => { if (i.frente) cont[i.frente] = (cont[i.frente] || 0) + 1; });
+  const cont = {}; tas.forEach(i => { if (i.frente) cont[i.frente] = (cont[i.frente] || 0) + 1; });
   const top = Object.entries(cont).sort((a, b) => b[1] - a[1])[0];
-  if (top && t.length >= 6 && top[1] / t.length >= .4) txt += ` ${FR[top[0]].label} concentra ${top[1]} das ${t.length} demandas abertas.`;
+  if (top && tas.length >= 6 && top[1] / tas.length >= .4) txt += tf("concentra_tpl", frLabel(top[0]), top[1], tas.length);
   $("comentario").textContent = txt;
 }
 
@@ -793,22 +1175,22 @@ function renderNews() {
   if (S.worldErr && !w) { box.innerHTML = errTxt(S.worldErr, N); return; }
   if (!w) return;
   const ns = (w.noticias || []).slice(0, 3);
-  $("newsMeta").textContent = w.data ? `briefing de ${brFull(w.data)}${w.data !== TODAY ? " · ainda não atualizado hoje" : ""}` : "El País · Folha · NYT";
-  if (!ns.length) { box.innerHTML = `<p class="vazio">O briefing de hoje ainda não foi gerado. Ele sai todo dia às 06:52.</p>`; return; }
+  $("newsMeta").textContent = w.data ? `${tf("briefing_de_tpl", brFull(w.data))}${w.data !== TODAY ? t("nao_atualizado_hoje") : ""}` : t("fontes_default");
+  if (!ns.length) { box.innerHTML = `<p class="vazio">${t("briefing_nao_gerado")}</p>`; return; }
   const fontes = n => { const V = [["elpais", "El País"], ["folha", "Folha"], ["nyt", "NYT"]]; const c = V.filter(([k]) => n.cobertura && n.cobertura[k]).map(([, l]) => l); return c.length ? c.join(" · ") : (n.fontes || []).map(f => f.nome).join(" · "); };
   box.innerHTML = `<ol class="noticias">${ns.map((n, k) => {
     const url = (n.fontes || []).find(f => /^https:\/\//.test(f.url || ""));
     return `<li class="noticia"><span class="n">${k + 1}</span><h3><button type="button" class="btn-l" data-news="${k}">${esc(n.titulo)}</button></h3>
       <span class="fontes">${esc(fontes(n))}</span><p>${esc(frases(n.oQueAconteceu))}</p>
-      ${n.porQueImporta ? `<p class="por"><b>Por que importa.</b> ${esc(n.porQueImporta)}</p>` : ""}
-      ${url ? `<a class="lk" href="${esc(url.url)}" target="_blank" rel="noopener">Ler na fonte (${esc(url.nome)})</a>` : ""}</li>`; }).join("")}</ol>`;
+      ${n.porQueImporta ? `<p class="por"><b>${t("por_que_importa")}</b> ${esc(n.porQueImporta)}</p>` : ""}
+      ${url ? `<a class="lk" href="${esc(url.url)}" target="_blank" rel="noopener">${tf("ler_na_fonte_tpl", esc(url.nome))}</a>` : ""}</li>`; }).join("")}</ol>`;
 }
 
 /* ---------- semana, atrasadas, aguardando ---------- */
 function renderSemana() {
   const box = $("semana");
-  if (!S.items && !evOk()) { box.innerHTML = `<li class="dia" style="display:block">${S.itemsErr ? errTxt(S.itemsErr, N) : `<span class="vazio">Lendo…</span>`}</li>`; return; }
-  $("semanaMeta").textContent = `De ${br(TODAY)} a ${br(addDays(TODAY, 6))}: compromissos, prazos reais e o que você planejou.`;
+  if (!S.items && !evOk()) { box.innerHTML = `<li class="dia" style="display:block">${S.itemsErr ? errTxt(S.itemsErr, N) : `<span class="vazio">${t("lendo")}</span>`}</li>`; return; }
+  $("semanaMeta").textContent = tf("semana_meta_tpl", br(TODAY), br(addDays(TODAY, 6)));
   let html = "";
   for (let k = 0; k < 7; k++) {
     const d = addDays(TODAY, k), evs = eventsOn(d);
@@ -818,12 +1200,12 @@ function renderSemana() {
     const linhas = [
       ...fer.map(e => `<li class="feriado">${esc(e.title)}</li>`),
       ...comp.map(e => isEstudo(e) && !e.title.includes("✅")
-        ? `<li class="pz-l">prazo do dia · <span class="h">${e.allDay ? "dia" : fmtTime.format(e.start)}</span> · ${evBtn(e)}</li>`
-        : `<li><span class="h">${e.allDay ? "dia" : fmtTime.format(e.start)}</span> · ${evBtn(e)}</li>`),
-      ...pz.map(i => `<li class="pz-l">prazo · ${itemBtn(i)}</li>`),
-      ...pl.map(i => `<li>planejada · ${itemBtn(i)}</li>`)
+        ? `<li class="pz-l">${t("prazo_do_dia")}<span class="h">${e.allDay ? t("dia_todo_curto") : fmtTime.format(e.start)}</span> · ${evBtn(e)}</li>`
+        : `<li><span class="h">${e.allDay ? t("dia_todo_curto") : fmtTime.format(e.start)}</span> · ${evBtn(e)}</li>`),
+      ...pz.map(i => `<li class="pz-l">${t("prazo_dot")}${itemBtn(i)}</li>`),
+      ...pl.map(i => `<li>${t("planejada_dot")}${itemBtn(i)}</li>`)
     ];
-    html += `<li class="dia${k === 0 ? " hoje" : ""}"><h3>${DOW[dowOf(d)]}<small>${br(d)}</small></h3><ul>${linhas.join("") || `<li class="livre">nada anotado</li>`}</ul></li>`;
+    html += `<li class="dia${k === 0 ? " hoje" : ""}"><h3>${DOW[dowOf(d)]}<small>${br(d)}</small></h3><ul>${linhas.join("") || `<li class="livre">${t("nada_anotado")}</li>`}</ul></li>`;
   }
   box.innerHTML = html;
 }
@@ -831,6 +1213,9 @@ function renderSemana() {
 let MES_OFF = 0;
 const mesUnsubs = [];
 const MON_CAP = m => MON[m].charAt(0).toUpperCase() + MON[m].slice(1);
+/* "8 de novembro" (pt) vs "November 8" (en); "Novembro de 2026" (pt) vs "November 2026" (en) — ordem muda, nunca só a palavra "de". */
+const diaDeMes = (dia, mesIdx) => LANG === "en" ? `${MON[mesIdx]} ${dia}` : `${dia} de ${MON[mesIdx]}`;
+const mesDeAno = (mesIdx, ano) => LANG === "en" ? `${MON_CAP(mesIdx)} ${ano}` : `${MON_CAP(mesIdx)} de ${ano}`;
 function mesGrade() {
   const [y0, m0] = TODAY.split("-").map(Number);
   const ini = new Date(Date.UTC(y0, m0 - 1 + MES_OFF, 1)).toISOString().slice(0, 10);
@@ -883,19 +1268,19 @@ function doDia(d) {
 }
 function renderMes() {
   const g = mesGrade(), box = $("mapa");
-  $("mesTit").textContent = `${MON_CAP(g.m - 1)} de ${g.y}`;
-  $("h-mes").textContent = `O mapa de ${MON[g.m - 1]}`;
-  $("mesAnt").textContent = `‹ ${MON[(g.m + 10) % 12]}`; $("mesProx").textContent = `${MON[g.m % 12]} ›`;
-  $("mesHoje").hidden = MES_OFF === 0;
+  $("mesTit").textContent = mesDeAno(g.m - 1, g.y);
+  $("h-mes").textContent = tf("mapa_de", MON[g.m - 1]);
+  $("mesAnt").textContent = tf("mes_ant_tpl", MON[(g.m + 10) % 12]); $("mesProx").textContent = tf("mes_prox_tpl", MON[g.m % 12]);
+  $("mesHoje").textContent = t("este_mes"); $("mesHoje").hidden = MES_OFF === 0;
   const okEv = CALS.some(c => S.mesEv[c.id]);
   if (!okEv && !S.items) {
     const err = S.mesErr.primary || S.evErr.primary;
-    box.innerHTML = `<div style="grid-column:1/-1;padding:16px">${err ? errTxt(err, G) : `<p class="vazio">Lendo o mês…</p>`}</div>`;
+    box.innerHTML = `<div style="grid-column:1/-1;padding:16px">${err ? errTxt(err, G) : `<p class="vazio">${t("lendo")}</p>`}</div>`;
     $("legenda").innerHTML = ""; $("leituraMes").textContent = ""; return;
   }
   const usadas = new Set(); let semCor = false;
   const cicloPrev = S.ciclo && S.ciclo.length ? addDays(S.ciclo[S.ciclo.length - 1], 30) : null;
-  let html = ["seg","ter","qua","qui","sex","sáb","dom"].map((n, k) => `<div class="dsem${k > 4 ? " fds" : ""}">${n}</div>`).join("");
+  let html = [1,2,3,4,5,6,0].map((di, k) => `<div class="dsem${k > 4 ? " fds" : ""}">${DOW[di]}</div>`).join("");
   for (let d = g.gIni; d <= g.gFim; d = addDays(d, 1)) {
     const num = Number(d.slice(8));
     if (d < g.ini || d > g.fim) { html += `<div class="cel fora"><span class="dn">${num}</span></div>`; continue; }
@@ -904,9 +1289,9 @@ function renderMes() {
     pts.forEach(([f]) => f && FR[f] ? usadas.add(f) : (semCor = true));
     const max = 7, vis = pts.slice(0, max);
     const cls = ["cel", d === TODAY ? "hoje" : "", d < TODAY ? "passou" : "", x.pz.length ? "pz" : ""].filter(Boolean).join(" ");
-    const desc = [`${DOW_LONG[dowOf(d)]}, ${num} de ${MON[g.m - 1]}`, x.fer.length ? x.fer.map(e => e.title).join(", ") : "",
-      x.comp.length ? plural(x.comp.length, "compromisso", "compromissos") : "", x.pz.length ? plural(x.pz.length, "prazo", "prazos") : "",
-      x.pl.length ? plural(x.pl.length, "tarefa planejada", "tarefas planejadas") : "", !pts.length && !x.fer.length ? "nada anotado" : ""].filter(Boolean).join(" · ");
+    const desc = [`${DOW_LONG[dowOf(d)]}, ${diaDeMes(num, g.m - 1)}`, x.fer.length ? x.fer.map(e => e.title).join(", ") : "",
+      x.comp.length ? plural(x.comp.length, t("compromisso_s"), t("compromisso_p")) : "", x.pz.length ? plural(x.pz.length, t("prazo_s"), t("prazo_p")) : "",
+      x.pl.length ? plural(x.pl.length, t("tarefa_planejada_s"), t("tarefa_planejada_p")) : "", !pts.length && !x.fer.length ? t("nada_anotado") : ""].filter(Boolean).join(" · ");
     const marco = (S.ciclo && S.ciclo.includes(d)) ? "★" : (d === cicloPrev ? "☆" : "");
     html += `<button type="button" class="${cls}" data-dia="${d}" aria-label="${esc(desc)}" title="${esc(desc)}"><span class="dn">${num}</span>` +
       (marco ? `<span class="ciclo" aria-hidden="true">${marco}</span>` : "") +
@@ -914,57 +1299,57 @@ function renderMes() {
       (x.fer.length ? `<span class="fer">${esc(x.fer[0].title)}</span>` : "") + `</button>`;
   }
   box.innerHTML = html;
-  $("legenda").innerHTML = [...FRENTES.filter(f => usadas.has(f)).map(f => `<span>${ponto(f)}${esc(FR[f].label)}</span>`),
-    semCor ? `<span>${ponto("")}sem área no título</span>` : "", `<span>${ponto("", true)}flexível, dia todo ou planejada</span>`, `<span><i class="rosa"></i>prazo real</span>`].join("");
+  $("legenda").innerHTML = [...FRENTES.filter(f => usadas.has(f)).map(f => `<span>${ponto(f)}${esc(frLabel(f))}</span>`),
+    semCor ? `<span>${ponto("")}${t("sem_area_titulo")}</span>` : "", `<span>${ponto("", true)}${t("legenda_flexivel")}</span>`, `<span><i class="rosa"></i>${t("prazo_real")}</span>`].join("");
   // leitura da Amélie
   const dias = []; for (let d = g.ini; d <= g.fim; d = addDays(d, 1)) if (MES_OFF !== 0 || d >= TODAY) dias.push(d);
   const fr = [];
   if (!dias.length) { $("leituraMes").textContent = ""; return; }
   const de = dias[0], ate = dias[dias.length - 1];
   const pzs = S.items ? tarefas().filter(i => i.prazo && i.prazo >= de && i.prazo <= ate).sort((a, b) => a.prazo.localeCompare(b.prazo)) : [];
-  if (S.items) fr.push(pzs.length ? `${MES_OFF === 0 ? "Até o fim do mês" : `Em ${MON[g.m - 1]}`} há ${plural(pzs.length, "prazo real", "prazos reais")}; o primeiro é ${pzs[0].parts[0]}, ${relLabel(pzs[0].prazo)}.`
-    : `Nenhum prazo real ${MES_OFF === 0 ? "até o fim do mês" : `em ${MON[g.m - 1]}`}.`);
+  const quandoMes = MES_OFF === 0 ? t("ate_fim_mes") : tf("em_mes_tpl", MON[g.m - 1]);
+  if (S.items) fr.push(pzs.length ? tf("ha_prazos_tpl", quandoMes, plural(pzs.length, t("prazo_real_s"), t("prazo_real_p")), pzs[0].parts[0], relLabel(pzs[0].prazo))
+    : tf("nenhum_prazo_real_tpl", quandoMes));
   if (okEv) {
     const fixos = d => doDia(d).comp.filter(e => !e.allDay && !e.flex).length;
     const sem = {}; dias.forEach(d => { const w = addDays(d, -((dowOf(d) + 6) % 7)); const s = sem[w] || (sem[w] = { de: d, ate: d, fx: 0, pz: 0 }); s.ate = d; s.fx += fixos(d); s.pz += doDia(d).pz.length; });
     const ws = Object.values(sem).sort((a, b) => (b.fx + 2 * b.pz) - (a.fx + 2 * a.pz));
-    if (ws.length > 1 && ws[0].fx + ws[0].pz > 0) fr.push(`A semana de ${br(ws[0].de)} a ${br(ws[0].ate)} é a mais carregada, com ${plural(ws[0].fx, "compromisso fixo", "compromissos fixos")}${ws[0].pz ? ` e ${plural(ws[0].pz, "prazo", "prazos")}` : ""}.`);
+    if (ws.length > 1 && ws[0].fx + ws[0].pz > 0) fr.push(tf("semana_carregada_tpl", br(ws[0].de), br(ws[0].ate), plural(ws[0].fx, t("compromisso_fixo_s"), t("compromisso_fixo_p")), ws[0].pz ? tf("e_prazos_tpl", plural(ws[0].pz, t("prazo_s"), t("prazo_p"))) : ""));
     const livres = dias.filter(d => !fixos(d)).length;
-    if (livres) fr.push(`${livres === dias.length ? "Nenhum dia" : plural(livres, "dia segue", "dias seguem")} ${livres === dias.length ? "tem compromisso fixo." : "sem compromisso fixo."}`);
+    if (livres) fr.push(`${livres === dias.length ? t("nenhum_dia") : plural(livres, t("dia_segue_s"), t("dias_seguem_p"))} ${livres === dias.length ? t("tem_compromisso_fixo") : t("sem_compromisso_fixo")}`);
     const fer = []; dias.forEach(d => doDia(d).fer.forEach(e => fer.push(`${e.title} (${br(d)})`)));
-    if (fer.length) fr.push(`${fer.length === 1 ? "Feriado" : "Feriados"}: ${[...new Set(fer)].join(", ")}.`);
+    if (fer.length) fr.push(`${fer.length === 1 ? t("feriado_s") : t("feriado_p")}: ${[...new Set(fer)].join(", ")}.`);
   }
   $("leituraMes").textContent = fr.join(" ");
   const nota = $("mesNota");
   nota.hidden = !(S.mesParcial || (!okEv && S.mesErr.primary));
-  nota.innerHTML = S.mesParcial ? "A agenda deste mês é longa; parte dos compromissos pode não aparecer aqui." : (!okEv && S.mesErr.primary ? errTxt(S.mesErr.primary, G).replace(/<\/?p[^>]*>/g, "") : "");
+  nota.innerHTML = S.mesParcial ? t("agenda_longa") : (!okEv && S.mesErr.primary ? errTxt(S.mesErr.primary, G).replace(/<\/?p[^>]*>/g, "") : "");
 }
 
 function renderPendencias() {
-  if (!S.items) { const m = S.itemsErr ? errTxt(S.itemsErr, N) : `<p class="vazio">Lendo…</p>`; $("atrasadas").innerHTML = m; $("aguardando").innerHTML = ""; return; }
+  if (!S.items) { const m = S.itemsErr ? errTxt(S.itemsErr, N) : `<p class="vazio">${t("lendo")}</p>`; $("atrasadas").innerHTML = m; $("aguardando").innerHTML = ""; return; }
   const late = tarefas().filter(isLate).sort((a, b) => a.prazo.localeCompare(b.prazo));
-  $("atrasadas").innerHTML = late.length ? `<ul class="itens">${late.map(i => itemRow(i)).join("")}</ul>` : `<p class="vazio">Nenhuma demanda passou do prazo.</p>`;
+  $("atrasadas").innerHTML = late.length ? `<ul class="itens">${late.map(i => itemRow(i)).join("")}</ul>` : `<p class="vazio">${t("nenhuma_atrasada")}</p>`;
   const wait = (S.items || []).filter(i => isOpen(i) && i.status === WAIT);
-  $("aguardando").innerHTML = wait.length ? `<ul class="itens">${wait.map(i => itemRow(i, false)).join("")}</ul>` : `<p class="vazio">Nada depende de terceiros agora.</p>`;
+  $("aguardando").innerHTML = wait.length ? `<ul class="itens">${wait.map(i => itemRow(i, false)).join("")}</ul>` : `<p class="vazio">${t("nada_terceiros")}</p>`;
 }
 
 /* ---------- frentes e projetos ---------- */
 function renderFrentes() {
   const box = $("frentes");
-  if (!S.items) { box.innerHTML = S.itemsErr ? errTxt(S.itemsErr, N) : `<p class="vazio">Lendo…</p>`; $("leitura").textContent = ""; return; }
+  if (!S.items) { box.innerHTML = S.itemsErr ? errTxt(S.itemsErr, N) : `<p class="vazio">${t("lendo")}</p>`; $("leitura").textContent = ""; return; }
   const abertos = S.items.filter(relevante);
   const st = FRENTES.map(f => { const l = abertos.filter(i => inFr(i, f)); return { f, n: l.length, late: l.filter(isLate).length, sem: l.filter(i => i.prazo && diff(TODAY, i.prazo) >= 0 && diff(TODAY, i.prazo) <= 7).length }; });
   box.innerHTML = st.filter(s => s.n).map(s => `<button type="button" class="frente" data-frente="${esc(s.f)}">
-      <b><span class="ponto" style="background:${FR[s.f].cor}"></span>${esc(FR[s.f].label)}</b>
-      <span class="nums num">${s.n ? `${plural(s.n, "aberta", "abertas")}${s.sem ? ` · ${s.sem} com prazo na semana` : ""}${s.late ? ` · <em>${plural(s.late, "atrasada", "atrasadas")}</em>` : ""}` : "nada aberto"}</span>
+      <b><span class="ponto" style="background:${FR[s.f].cor}"></span>${esc(frLabel(s.f))}</b>
+      <span class="nums num">${s.n ? `${plural(s.n, t("aberta_s"), t("aberta_p"))}${s.sem ? ` · ${s.sem}${t("com_prazo_semana")}` : ""}${s.late ? ` · <em>${plural(s.late, t("atrasada_s"), t("atrasada_p"))}</em>` : ""}` : t("nada_aberto")}</span>
       ${FR[s.f].img && s.n ? `<img class="deco" src="img/${FR[s.f].img}" alt="">` : ""}</button>`).join("");
   const cheias = st.filter(s => s.n).sort((a, b) => b.n - a.n), total = abertos.length;
-  $("leitura").textContent = !total ? "Nenhuma demanda aberta. A mesa está livre." :
-    `${cheias[0] ? `${FR[cheias[0].f].label} é a área mais cheia, com ${cheias[0].n} de ${total} demandas abertas.` : ""}`;
+  $("leitura").textContent = !total ? t("nenhuma_aberta") :
+    `${cheias[0] ? tf("area_mais_cheia_tpl", frLabel(cheias[0].f), cheias[0].n, total) : ""}`;
 }
 /* ---------- roda da vida: gráfico + nota do mês, lidos/gravados na base "Roda da Vida — Mensal" ---------- */
 const MES_ID = d => d.slice(0, 7);
-const MES_ABR = ["jan","fev","mar","abr","mai","jun","jul","ago","set","out","nov","dez"];
 function addMonths(mid, n) {
   let [y, m] = mid.split("-").map(Number);
   m += n; while (m > 12) { m -= 12; y++; } while (m < 1) { m += 12; y--; }
@@ -1004,13 +1389,13 @@ function mediaDoRow(row) {
 }
 function renderRodaViz() {
   const svg = $("rodaSvg"), txt = $("rodaMesTxt"), res = $("rodaResumo");
-  txt.textContent = `Roda da Vida · ${MON_CAP(+TODAY.slice(5, 7) - 1)} de ${TODAY.slice(0, 4)}`;
+  txt.textContent = tf("roda_mes_tpl", MON_CAP(+TODAY.slice(5, 7) - 1), TODAY.slice(0, 4));
   if (!S.roda && S.rodaErr) { res.innerHTML = errTxt(S.rodaErr, N); svg.innerHTML = ""; return; }
   const row = rodaLinhaAtual();
   svg.innerHTML = rodaSvgInner(row);
-  if (!S.roda) { res.textContent = "Lendo…"; return; }
-  if (!row) { res.textContent = "Ainda não preenchida este mês."; return; }
-  res.textContent = `Média do mês: ${mediaDoRow(row)}.${row["Maior necessidade do mês"] ? " " + row["Maior necessidade do mês"] : ""}`;
+  if (!S.roda) { res.textContent = t("lendo"); return; }
+  if (!row) { res.textContent = t("nao_preenchida_mes"); return; }
+  res.textContent = tf("media_mes_resumo_tpl", mediaDoRow(row), row["Maior necessidade do mês"] ? " " + row["Maior necessidade do mês"] : "");
 }
 function renderMesesBar() {
   const box = $("mesesBar"); if (!box) return;
@@ -1033,7 +1418,7 @@ async function salvarRoda(btn, mid) {
     const just = jEl ? jEl.value.trim() : "";
     if (!isNaN(v)) {
       vals[f] = Math.min(10, Math.max(1, v));
-      if (just) linhas.push(`${FR[f].label}: ${vals[f]} — ${just}`); else { linhas.push(`${FR[f].label}: ${vals[f]}`); okJust = false; }
+      if (just) linhas.push(`${FR[f].label}: ${vals[f]} — ${just}`); else { linhas.push(`${FR[f].label}: ${vals[f]}`); okJust = false; } /* chave sempre em português: formato gravado, lido de volta por justAnt() independente do idioma da tela */
     } else okAll = false;
   });
   const necessidade = ($("rf_necessidade") || {}).value || "";
@@ -1064,36 +1449,36 @@ async function salvarRoda(btn, mid) {
         await mcp.callTool(N, "notion-create-pages", { parent: { type: "data_source_id", data_source_id: RODA_DS }, pages: [{ properties: { "Mês": `${MON_CAP(+dnm - 1)} de ${dny}`, "date:Referência:start": `${dny}-${dnm}-01`, "date:Referência:is_datetime": 0, ...nextProps } }], allow_async: false });
       }
     }
-    toast(!okAll ? "Salvo — mas faltou nota em alguma área." : !okJust ? "Salvo — mas faltou explicar alguma nota." : "Notas do mês salvas.");
+    toast(!okAll ? t("toast_salvo_falta_nota") : !okJust ? t("toast_salvo_falta_explicar") : t("toast_notas_salvas"));
     if (!$("veu").hidden) fechar();
     atualizar();
-  } catch (e) { btn.disabled = false; toast("Não consegui salvar agora. Tente de novo."); }
+  } catch (e) { btn.disabled = false; toast(t("toast_erro_salvar_generico")); }
 }
 function renderProjetos() {
   const box = $("projetos");
-  if (!S.items) { box.innerHTML = S.itemsErr ? errTxt(S.itemsErr, N) : `<p class="vazio">Lendo…</p>`; return; }
+  if (!S.items) { box.innerHTML = S.itemsErr ? errTxt(S.itemsErr, N) : `<p class="vazio">${t("lendo")}</p>`; return; }
   box.innerHTML = PROJECTS.map(p => { const l = S.items.filter(i => isOpen(i) && projOf(i) === p);
     const pz = l.filter(i => i.prazo).sort((a, b) => a.prazo.localeCompare(b.prazo))[0];
-    return `<button type="button" class="projeto" data-proj="${esc(p)}"><h3>${esc(p)}</h3><span>${l.length ? plural(l.length, "demanda aberta", "demandas abertas") : "sem demandas abertas"}${pz ? ` · próximo prazo ${relLabel(pz.prazo)}` : ""}</span></button>`; }).join("");
+    return `<button type="button" class="projeto" data-proj="${esc(p)}"><h3>${esc(p)}</h3><span>${l.length ? plural(l.length, t("demanda_aberta_s"), t("demanda_aberta_p")) : t("nada_aberto")}${pz ? ` · ${t("prazo_dot")}${relLabel(pz.prazo)}` : ""}</span></button>`; }).join("");
 }
 
 function renderAll() {
   TODAY = spDay(new Date());
   renderTopo(); renderComentario(); renderNews(); renderMes(); renderSemana(); renderPendencias(); renderFrentes(); renderRodaViz(); renderMesesBar();
-  $("atualizado").textContent = S.at ? `lido às ${fmtTime.format(S.at)}` : "";
+  $("atualizado").textContent = S.at ? `${LANG === "en" ? "read at" : "lido às"} ${fmtTime.format(S.at)}` : "";
   if (aberto) renderSolta();
   if ($("paginaMenu") && !$("paginaMenu").hidden) montarPaginaMenu();
 }
 
 /* ---------- folha solta ---------- */
 function findItem(k) { return (S.items || []).find(i => (i.id || i.name) === k); }
-/* Agentes ligados à Amélie — hoje só o Bento (consulta, só leitura); novos agentes entram só nesta lista. */
+/* Agentes ligados à Amélie — hoje só o Bento (consulta, só leitura); novos agentes entram só nesta lista. O nome "Bento" é dado pessoal e não traduz; descrição traduz. */
 const AGENTES = [
-  { nome: "Bento", papel: "agente financeiro", status: "conectado · só consulta", nota: "Amélie só pergunta ao Bento (orçamento, gastos, disponibilidade) e repete o número que ele devolve — nunca registra nem edita nada das bases dele." }
+  { nome: "Bento" }
 ];
 function agentesConectadosHtml() {
-  if (!AGENTES.length) return `<p class="vazio">Nenhum outro agente conectado por enquanto.</p>`;
-  return `<ul class="lista-s">` + AGENTES.map(ag => `<li><span style="font:600 15px var(--f-datilo)">${esc(ag.nome)}</span><small>${esc(ag.papel)} · ${esc(ag.status)}</small>${ag.nota ? `<p class="corpo" style="margin-top:4px;font-size:13px">${esc(ag.nota)}</p>` : ""}</li>`).join("") + `</ul>`;
+  if (!AGENTES.length) return `<p class="vazio">${t("nenhum_agente")}</p>`;
+  return `<ul class="lista-s">` + AGENTES.map(ag => `<li><span style="font:600 15px var(--f-datilo)">${esc(ag.nome)}</span><small>${esc(t("agente_financeiro"))} · ${esc(t("conectado_so_consulta"))}</small><p class="corpo" style="margin-top:4px;font-size:13px">${esc(t("bento_nota"))}</p></li>`).join("") + `</ul>`;
 }
 /* Formulário mensal da Roda da Vida, para um mês qualquer (padrão: o mês atual) — usado na folha "roda" e na página do Menu. */
 function rodaFormHtml(mid) {
@@ -1103,15 +1488,16 @@ function rodaFormHtml(mid) {
   const nextId = addMonths(mid, 1);
   const nextRow = rodaLinhaDoMes(nextId);
   const [dny, dnm] = nextId.split("-");
+  /* a chave de busca é sempre o rótulo em português (formato gravado no Notion), nunca o idioma da tela */
   const justAnt = {}; if (row && row["Justificativas das notas"]) String(row["Justificativas das notas"]).split("\n").forEach(ln => { const mm = ln.match(/^.+?:\s*\d+\s*—\s*([\s\S]*)$/); if (mm) { const lbl = ln.split(":")[0].trim(); justAnt[lbl] = mm[1]; } });
-  return `<p class="canon">${MON_CAP(+am - 1)} de ${ay} · de 1 (vazio) a 10 (pleno) · diga também por quê</p>` +
-    `<p class="vazio" style="margin:6px 0 14px">Prefere falar em vez de digitar? Mande um áudio pela Amélie no WhatsApp — sem limite de tamanho, ela transcreve e preenche aqui.</p>` +
-    `<div class="edita" aria-label="Notas do mês">` +
-    FRENTES.map((f, i) => `<div class="nm"><label for="rf_${i}">${esc(FR[f].label)}</label><div style="display:flex;gap:8px;margin-top:4px"><input id="rf_${i}" type="number" min="1" max="10" step="1" style="width:56px;flex:none" value="${row && typeof row[f] === "number" ? row[f] : ""}"><input id="rf_j_${i}" type="text" placeholder="por quê?" style="flex:1" value="${esc(justAnt[FR[f].label] || "")}"></div></div>`).join("") +
-    `<label class="nm" for="rf_necessidade">Maior necessidade do mês<textarea id="rf_necessidade" rows="2">${esc(row ? row["Maior necessidade do mês"] || "" : "")}</textarea></label>` +
-    `<label class="nm" for="rf_mudancas">O que você quer mudar para subir alguma nota? (opcional)<textarea id="rf_mudancas" rows="2" placeholder="ex: reservar mais tempo para X, retomar Y">${esc(nextRow ? nextRow["Mudanças propostas"] || "" : "")}</textarea></label>` +
-    `<label class="nm" for="rf_prioridade_prox">Prioridade de ${MON_CAP(+dnm - 1)} (mês que vem)<textarea id="rf_prioridade_prox" rows="2" placeholder="o foco principal do próximo mês">${esc(nextRow ? nextRow["Prioridade do mês"] || "" : "")}</textarea></label>` +
-    `<div class="acoes"><button type="button" class="b" id="btnSalvarRoda" ${!mcp ? "disabled" : ""}>Salvar</button></div></div>`;
+  return `<p class="canon">${tf("roda_form_canon_tpl", MON_CAP(+am - 1), ay)}</p>` +
+    `<p class="vazio" style="margin:6px 0 14px">${t("roda_audio_hint")}</p>` +
+    `<div class="edita" aria-label="${esc(t('h_notas_roda'))}">` +
+    FRENTES.map((f, i) => `<div class="nm"><label for="rf_${i}">${esc(frLabel(f))}</label><div style="display:flex;gap:8px;margin-top:4px"><input id="rf_${i}" type="number" min="1" max="10" step="1" style="width:56px;flex:none" value="${row && typeof row[f] === "number" ? row[f] : ""}"><input id="rf_j_${i}" type="text" placeholder="${esc(t('por_que_placeholder'))}" style="flex:1" value="${esc(justAnt[FR[f].label] || "")}"></div></div>`).join("") +
+    `<label class="nm" for="rf_necessidade">${esc(t('maior_necessidade_label'))}<textarea id="rf_necessidade" rows="2">${esc(row ? row["Maior necessidade do mês"] || "" : "")}</textarea></label>` +
+    `<label class="nm" for="rf_mudancas">${esc(t('mudar_nota_label'))}<textarea id="rf_mudancas" rows="2" placeholder="${esc(t('mudar_nota_placeholder'))}">${esc(nextRow ? nextRow["Mudanças propostas"] || "" : "")}</textarea></label>` +
+    `<label class="nm" for="rf_prioridade_prox">${esc(tf('prioridade_mes_tpl', MON_CAP(+dnm - 1)))}<textarea id="rf_prioridade_prox" rows="2" placeholder="${esc(t('prioridade_mes_placeholder'))}">${esc(nextRow ? nextRow["Prioridade do mês"] || "" : "")}</textarea></label>` +
+    `<div class="acoes"><button type="button" class="b" id="btnSalvarRoda" ${!mcp ? "disabled" : ""}>${esc(t('salvar'))}</button></div></div>`;
 }
 /* Quantidade de itens por área da Roda da Vida com alguma data (prazo/planejada/quando) naquele mês — base para o resumo. */
 function statsDoMes(mid) {
@@ -1127,35 +1513,36 @@ async function gerarResumoMes(mid, btn) {
   if (!mcp) return;
   if (btn) btn.disabled = true;
   try {
-    if (!sample) { toast("Resumo por IA não está disponível aqui agora."); if (btn) btn.disabled = false; return; }
+    if (!sample) { toast(t("toast_sem_ia")); if (btn) btn.disabled = false; return; }
     const row = rodaLinhaDoMes(mid);
     const st = statsDoMes(mid);
     const [ay, am] = mid.split("-");
     const nomeMes = `${MON_CAP(+am - 1)} de ${ay}`;
     const notasTxt = FRENTES.filter(f => row && typeof row[f] === "number").map(f => `${FR[f].label}: ${row[f]}`).join("; ") || "nenhuma nota lançada pela Isabela neste mês";
-    const prompt = `Você é a Amélie, secretária pessoal da Isabela: calma, elegante, direta, nunca corporativa ou efusiva, nunca lista numerada. Escreva um resumo curto (4 a 6 frases, texto corrido) do mês de ${nomeMes} da Isabela, baseado só nestes dados reais — nunca invente datas, pessoas ou fatos que não estejam aqui:\n\n- Total de itens (tarefas/compromissos) com data naquele mês: ${st.total}.\n- Por área da Roda da Vida, mais movimentada primeiro: ${st.porArea.map(a => `${a.area} (${a.total} itens, ${a.concluidas} concluídas)`).join("; ") || "sem dados suficientes"}.\n- Notas que a Isabela deu à Roda da Vida naquele mês: ${notasTxt}.\n- Justificativas que ela escreveu: ${row && row["Justificativas das notas"] ? row["Justificativas das notas"] : "nenhuma"}.\n\nFale sobre onde ela mais se dedicou, onde se dedicou menos, e, se houver notas da Roda da Vida, comente como ela ficou. Se não houver notas, diga isso com naturalidade e comente só com base na movimentação de tarefas — nunca invente um motivo emocional que não esteja nos dados.`;
+    const idiomaResposta = LANG === "en" ? "Write your answer in natural English." : "Escreva sua resposta em português.";
+    const prompt = `Você é a Amélie, secretária pessoal da Isabela: calma, elegante, direta, nunca corporativa ou efusiva, nunca lista numerada. Escreva um resumo curto (4 a 6 frases, texto corrido) do mês de ${nomeMes} da Isabela, baseado só nestes dados reais — nunca invente datas, pessoas ou fatos que não estejam aqui:\n\n- Total de itens (tarefas/compromissos) com data naquele mês: ${st.total}.\n- Por área da Roda da Vida, mais movimentada primeiro: ${st.porArea.map(a => `${a.area} (${a.total} itens, ${a.concluidas} concluídas)`).join("; ") || "sem dados suficientes"}.\n- Notas que a Isabela deu à Roda da Vida naquele mês: ${notasTxt}.\n- Justificativas que ela escreveu: ${row && row["Justificativas das notas"] ? row["Justificativas das notas"] : "nenhuma"}.\n\nFale sobre onde ela mais se dedicou, onde se dedicou menos, e, se houver notas da Roda da Vida, comente como ela ficou. Se não houver notas, diga isso com naturalidade e comente só com base na movimentação de tarefas — nunca invente um motivo emocional que não esteja nos dados. ${idiomaResposta}`;
     const res = await sample(prompt);
     const texto = (res && res.text || "").trim();
-    if (!texto) { toast("Não consegui gerar o resumo agora."); if (btn) btn.disabled = false; return; }
+    if (!texto) { toast(t("toast_erro_resumo")); if (btn) btn.disabled = false; return; }
     if (row) {
       const m = String(row.url || "").match(/([0-9a-f]{32})/i);
       await mcp.callTool(N, "notion-update-page", { page_id: m ? m[1] : row.url, command: "update_properties", properties: { "Resumo do mês": texto }, allow_async: false });
     } else {
       await mcp.callTool(N, "notion-create-pages", { parent: { type: "data_source_id", data_source_id: RODA_DS }, pages: [{ properties: { "Mês": nomeMes, "date:Referência:start": `${ay}-${am}-01`, "date:Referência:is_datetime": 0, "Resumo do mês": texto } }], allow_async: false });
     }
-    toast("Resumo do mês gerado.");
+    toast(t("toast_resumo_gerado"));
     atualizar();
-  } catch (e) { toast("Não consegui gerar o resumo agora."); if (btn) btn.disabled = false; }
+  } catch (e) { toast(t("toast_erro_resumo")); if (btn) btn.disabled = false; }
 }
 /* Conteúdo da página do Menu da Amélie: o que ela é, personalização, agentes conectados, histórico por ano e a avaliação do mês atual. */
 function perfilHtml() {
   const p = S.perfil || {};
-  return `<p style="margin:0 0 14px;font-size:13px;color:var(--tinta-2)">Quem você é, pra Amélie saber com quem está falando. Isto é informação sua — fica só no Notion, nunca no código deste painel.</p>` +
-    `<div class="edita" aria-label="Personalização">` +
-    `<label class="nm" for="pf_nome">Nome<input id="pf_nome" type="text" value="${esc(p["Nome"] || "")}"></label>` +
-    `<label class="nm" for="pf_profissao">Profissão<input id="pf_profissao" type="text" value="${esc(p["Profissão"] || "")}"></label>` +
-    `<label class="nm" for="pf_sobre">O que a Amélie deve saber sobre você<textarea id="pf_sobre" rows="3" placeholder="rotina, prioridades, particularidades — o que mais importa pra ela entender seu dia a dia">${esc(p["O que a Amélie deve saber"] || "")}</textarea></label>` +
-    `<div class="acoes"><button type="button" class="b" id="btnSalvarPerfil" ${!mcp ? "disabled" : ""}>Salvar</button></div></div>`;
+  return `<p style="margin:0 0 14px;font-size:13px;color:var(--tinta-2)">${t("perfil_intro")}</p>` +
+    `<div class="edita" aria-label="${esc(t('menu_h_personalizacao'))}">` +
+    `<label class="nm" for="pf_nome">${esc(t('nome_label'))}<input id="pf_nome" type="text" value="${esc(p["Nome"] || "")}"></label>` +
+    `<label class="nm" for="pf_profissao">${esc(t('profissao_label'))}<input id="pf_profissao" type="text" value="${esc(p["Profissão"] || "")}"></label>` +
+    `<label class="nm" for="pf_sobre">${esc(t('sobre_label'))}<textarea id="pf_sobre" rows="3" placeholder="${esc(t('sobre_placeholder'))}">${esc(p["O que a Amélie deve saber"] || "")}</textarea></label>` +
+    `<div class="acoes"><button type="button" class="b" id="btnSalvarPerfil" ${!mcp ? "disabled" : ""}>${esc(t('salvar'))}</button></div></div>`;
 }
 async function salvarPerfil(btn) {
   if (!mcp) return;
@@ -1173,72 +1560,79 @@ async function salvarPerfil(btn) {
     } else {
       await mcp.callTool(N, "notion-create-pages", { parent: { type: "data_source_id", data_source_id: PERFIL_DS }, pages: [{ properties: { "Campo": "Perfil", ...props } }], allow_async: false });
     }
-    toast("Perfil salvo.");
+    toast(t("toast_perfil_salvo"));
     atualizar();
-  } catch (e) { btn.disabled = false; toast("Não consegui salvar o perfil agora."); }
+  } catch (e) { btn.disabled = false; toast(t("toast_erro_perfil")); }
+}
+function idiomaHtml() {
+  return `<div class="ano-nav" role="group" aria-label="${esc(t('menu_h_idioma'))}">` +
+    `<button type="button" class="b${LANG === "pt" ? "" : " v"}" id="btnLangPt">Português</button>` +
+    `<button type="button" class="b${LANG === "en" ? "" : " v"}" id="btnLangEn">English</button>` +
+    `</div><p style="margin-top:10px;font-size:13px;color:var(--tinta-2)">${t("menu_idioma_desc")}</p>`;
 }
 function menuHtml() {
   const anoHoje = TODAY.slice(0, 4);
-  return `<h2 class="menu-h1">Menu da Amélie</h2><p class="menu-sub">O que ela é, quem você é pra ela, a quem está ligada, e a conversa deste mês</p>` +
-    `<div class="menu-sec"><h3>O que a Amélie faz</h3><p>Amélie é a secretária pessoal da Isabela: lê o que chega pelo WhatsApp, organiza a agenda e as tarefas entre o Google Agenda e o Notion, resolve sozinha os conflitos de horário dentro de um mesmo dia, manda os briefings diários, semanais, mensais e anuais, e conduz o fechamento mensal da Roda da Vida — sempre na mesma voz calma e discreta.</p></div>` +
-    `<div class="menu-sec"><h3>Personalização</h3>${perfilHtml()}</div>` +
-    `<div class="menu-sec"><h3>Agentes conectados</h3>${agentesConectadosHtml()}</div>` +
-    `<div class="menu-sec"><h3>Histórico por ano</h3><div class="ano-nav"><button type="button" id="btnAnoAnt" aria-label="Ano anterior">‹</button><strong>${ANO_VISTO}</strong><button type="button" id="btnAnoProx" aria-label="Próximo ano">›</button></div><p style="margin-top:10px;font-size:13px;color:var(--tinta-2)">Nenhum mês é apagado quando o ano vira. Escolha o ano aqui para ver os meses dele na barra do topo — toque num mês lá para abrir a Roda da Vida, o resumo e a autoavaliação daquele mês${ANO_VISTO !== anoHoje ? "." : ", incluindo os já passados."}</p></div>` +
-    `<div class="menu-sec"><h3>Avaliação da Roda da Vida — ${MON_CAP(+TODAY.slice(5, 7) - 1)} de ${anoHoje}</h3>${rodaFormHtml(MES_ID(TODAY))}</div>`;
+  return `<h2 class="menu-h1">${t("menu_titulo")}</h2><p class="menu-sub">${t("menu_sub")}</p>` +
+    `<div class="menu-sec"><h3>${t("menu_h_faz")}</h3><p>${t("menu_desc_faz")}</p></div>` +
+    `<div class="menu-sec"><h3>${t("menu_h_idioma")}</h3>${idiomaHtml()}</div>` +
+    `<div class="menu-sec"><h3>${t("menu_h_personalizacao")}</h3>${perfilHtml()}</div>` +
+    `<div class="menu-sec"><h3>${t("menu_h_agentes")}</h3>${agentesConectadosHtml()}</div>` +
+    `<div class="menu-sec"><h3>${t("menu_h_historico")}</h3><div class="ano-nav"><button type="button" id="btnAnoAnt" aria-label="${esc(t('ano_ant_aria'))}">‹</button><strong>${ANO_VISTO}</strong><button type="button" id="btnAnoProx" aria-label="${esc(t('ano_prox_aria'))}">›</button></div><p style="margin-top:10px;font-size:13px;color:var(--tinta-2)">${t("historico_desc_tpl")}${ANO_VISTO !== anoHoje ? t("historico_desc_suf_outro") : t("historico_desc_suf_atual")}</p></div>` +
+    `<div class="menu-sec"><h3>${tf("menu_h_avaliacao_tpl", MON_CAP(+TODAY.slice(5, 7) - 1), anoHoje)}</h3>${rodaFormHtml(MES_ID(TODAY))}</div>`;
 }
 const dl = rows => `<dl class="dl">${rows.filter(r => r[1]).map(([k, v]) => `<dt>${k}</dt><dd>${v}</dd>`).join("")}</dl>`;
-function lista(l) { return l.length ? `<ul class="lista-s">${l.map(i => `<li>${itemBtn(i)}<small>${[i.status ? plain(i.status) : "", quandoTxt(i).replace(/<[^>]+>/g, "")].filter(Boolean).join(" · ")}</small></li>`).join("")}</ul>` : `<p class="vazio">Nada aberto aqui.</p>`; }
+function lista(l) { return l.length ? `<ul class="lista-s">${l.map(i => `<li>${itemBtn(i)}<small>${[i.status ? dispWord(i.status) : "", quandoTxt(i).replace(/<[^>]+>/g, "")].filter(Boolean).join(" · ")}</small></li>`).join("")}</ul>` : `<p class="vazio">${t("nada_aberto_aqui")}</p>`; }
 function renderSolta() {
   const a = aberto, c = $("sCorpo"); let h = "";
   if (EDIT && a && a.k === "item" && $("ef_name") && document.activeElement && document.activeElement.closest(".edita")) return;
   if (a.k === "item") {
-    const i = findItem(a.id); if (!i) { c.innerHTML = `<p class="vazio">Este item não está mais na lista.</p>`; return; }
+    const i = findItem(a.id); if (!i) { c.innerHTML = `<p class="vazio">${t("item_nao_existe")}</p>`; return; }
     const proj = projOf(i);
     h = `<h2 id="sTit">${esc(i.parts[0])}</h2><p class="canon">${esc(i.name)}</p>` + dl([
-      ["Tipo", esc(i.tipo)], ["Roda da Vida", FR[i.frente] ? esc(FR[i.frente].label) : ""], ["Projeto", esc(proj)], ["Lista", esc(plain(i.lista))],
-      ["Status", esc(isLate(i) ? "Atrasada" : plain(i.status))], ["Prazo", i.prazo ? `${brFull(i.prazo)} (${relLabel(i.prazo)})` : ""],
-      ["Planejada", i.plan ? `${brFull(i.plan)} (${relLabel(i.plan)})` : ""], ["Prioridade", esc(i.prio)], ["Energia", esc(plain(i.energia))],
-      ["Adiamentos", i.adi ? String(i.adi) : ""]]) + (i.obs ? `<p class="corpo">${esc(i.obs)}</p>` : "") +
-      `<div class="acoes">${isOpen(i) && i.id ? `<button type="button" class="b" data-done="${esc(i.id)}" ${!mcp || S.busy.has(i.id) ? "disabled" : ""}>Marcar como concluída</button>` : ""}${!isOpen(i) && i.id ? `<button type="button" class="b v" data-reopen="${esc(i.id)}" ${!mcp ? "disabled" : ""}>Reabrir</button>` : ""}${i.id && mcp && !EDIT ? `<button type="button" class="b v" data-edit="${esc(i.id)}">Editar</button>` : ""}${i.url ? `<a class="b v" style="display:inline-flex;align-items:center;text-decoration:none" href="${esc(i.url)}" target="_blank" rel="noopener">Abrir no Notion</a>` : ""}</div>` + extrasItem(i);
+      [t("field_tipo"), esc(dispWord(i.tipo))], [t("field_roda"), frLabel(i.frente)], [t("field_projeto"), esc(proj)], [t("field_lista"), esc(dispWord(i.lista))],
+      [t("field_status"), esc(isLate(i) ? t("atrasada_label") : dispWord(i.status))], [t("field_prazo"), i.prazo ? `${brFull(i.prazo)} (${relLabel(i.prazo)})` : ""],
+      [t("field_planejada"), i.plan ? `${brFull(i.plan)} (${relLabel(i.plan)})` : ""], [t("field_prioridade"), esc(i.prio)], [t("field_energia"), esc(dispWord(i.energia))],
+      [t("field_adiamentos"), i.adi ? String(i.adi) : ""]]) + (i.obs ? `<p class="corpo">${esc(i.obs)}</p>` : "") +
+      `<div class="acoes">${isOpen(i) && i.id ? `<button type="button" class="b" data-done="${esc(i.id)}" ${!mcp || S.busy.has(i.id) ? "disabled" : ""}>${t("marcar_concluida")}</button>` : ""}${!isOpen(i) && i.id ? `<button type="button" class="b v" data-reopen="${esc(i.id)}" ${!mcp ? "disabled" : ""}>${t("reabrir_btn")}</button>` : ""}${i.id && mcp && !EDIT ? `<button type="button" class="b v" data-edit="${esc(i.id)}">${t("editar_btn")}</button>` : ""}${i.url ? `<a class="b v" style="display:inline-flex;align-items:center;text-decoration:none" href="${esc(i.url)}" target="_blank" rel="noopener">${t("abrir_notion")}</a>` : ""}</div>` + extrasItem(i);
     carregarCorpo(i);
   } else if (a.k === "ev") {
-    const e = allEvents().find(x => x.id === a.id); if (!e) { c.innerHTML = `<p class="vazio">Este compromisso não está mais na agenda.</p>`; return; }
+    const e = allEvents().find(x => x.id === a.id); if (!e) { c.innerHTML = `<p class="vazio">${t("ev_nao_existe")}</p>`; return; }
     h = `<h2 id="sTit">${esc(e.short)}</h2><p class="canon">${esc(e.title)}</p>` + dl([
-      ["Dia", `${DOW_LONG[dowOf(e.day)]}, ${brFull(e.day)}`], ["Horário", e.allDay ? "o dia todo" : `${fmtTime.format(e.start)} às ${fmtTime.format(e.end)}`],
-      ["Agenda", esc(e.cal)], ["Tipo", e.flex ? "bloco flexível" : "compromisso fixo"], ["Local", esc(e.location)], ["Pessoas", esc(e.attendees.join(", "))]]) +
+      [t("field_dia"), `${DOW_LONG[dowOf(e.day)]}, ${brFull(e.day)}`], [t("field_horario"), e.allDay ? t("dia_todo") : `${fmtTime.format(e.start)}${t("horario_sep")}${fmtTime.format(e.end)}`],
+      [t("field_agenda"), esc(e.cal)], [t("field_tipo"), e.flex ? t("bloco_flexivel") : t("compromisso_fixo")], [t("field_local"), esc(e.location)], [t("field_pessoas"), esc(e.attendees.join(", "))]]) +
       (e.desc ? `<p class="corpo">${esc(e.desc.replace(/<[^>]+>/g, " "))}</p>` : "") +
-      `<div class="acoes">${e.meet ? `<a class="b" style="display:inline-flex;align-items:center;text-decoration:none" href="${esc(e.meet)}" target="_blank" rel="noopener">Entrar na chamada</a>` : ""}${e.link ? `<a class="b v" style="display:inline-flex;align-items:center;text-decoration:none" href="${esc(e.link)}" target="_blank" rel="noopener">Abrir na agenda</a>` : ""}</div>`;
+      `<div class="acoes">${e.meet ? `<a class="b" style="display:inline-flex;align-items:center;text-decoration:none" href="${esc(e.meet)}" target="_blank" rel="noopener">${t("entrar_chamada")}</a>` : ""}${e.link ? `<a class="b v" style="display:inline-flex;align-items:center;text-decoration:none" href="${esc(e.link)}" target="_blank" rel="noopener">${t("abrir_agenda")}</a>` : ""}</div>`;
   } else if (a.k === "news") {
     const n = S.world && S.world.noticias && S.world.noticias[a.id]; if (!n) return;
-    h = `<h2 id="sTit">${esc(n.titulo)}</h2><p class="canon">Notícia ${a.id + 1} de 3${S.world.data ? " · " + brFull(S.world.data) : ""}</p>` +
-      (n.oQueAconteceu ? `<p class="corpo">${esc(n.oQueAconteceu)}</p>` : "") + (n.porQueImporta ? `<p class="corpo"><b>Por que importa.</b> ${esc(n.porQueImporta)}</p>` : "") +
-      (n.diferencas ? `<p class="corpo"><b>Como cada jornal tratou.</b> ${esc(typeof n.diferencas === "string" ? n.diferencas : JSON.stringify(n.diferencas))}</p>` : "") +
+    h = `<h2 id="sTit">${esc(n.titulo)}</h2><p class="canon">${tf("noticia_x_de_3_tpl", a.id + 1)}${S.world.data ? " · " + brFull(S.world.data) : ""}</p>` +
+      (n.oQueAconteceu ? `<p class="corpo">${esc(n.oQueAconteceu)}</p>` : "") + (n.porQueImporta ? `<p class="corpo"><b>${t("por_que_importa")}</b> ${esc(n.porQueImporta)}</p>` : "") +
+      (n.diferencas ? `<p class="corpo"><b>${t("como_jornal_tratou")}</b> ${esc(typeof n.diferencas === "string" ? n.diferencas : JSON.stringify(n.diferencas))}</p>` : "") +
       `<ul class="lista-s">${(n.fontes || []).filter(f => /^https:\/\//.test(f.url || "")).map(f => `<li><a href="${esc(f.url)}" target="_blank" rel="noopener">${esc(f.nome || f.url)}</a></li>`).join("")}</ul>`;
   } else if (a.k === "dia") {
     const d = a.id, x = doDia(d);
-    const evLi = e => `<li>${evBtn(e, `${e.allDay ? "dia todo" : fmtTime.format(e.start)} · ${e.short}`)}<small>${[e.flex ? "bloco flexível" : "compromisso fixo", FR[frenteEv(e)] ? FR[frenteEv(e)].label : "", e.cal].filter(Boolean).map(esc).join(" · ")}</small></li>`;
-    h = `<h2 id="sTit">${DOW_LONG[dowOf(d)]}, ${Number(d.slice(8))} de ${MON[+d.slice(5, 7) - 1]}</h2><p class="canon">${esc(relLabel(d))}${x.fer.length ? " · " + esc(x.fer.map(e => e.title).join(", ")) : ""}</p>` +
-      `<div class="sec-s"><h3>Compromissos</h3>${x.comp.length ? `<ul class="lista-s">${x.comp.map(evLi).join("")}</ul>` : `<p class="vazio">Nada marcado na agenda.</p>`}</div>` +
-      `<div class="sec-s"><h3>Prazos reais</h3>${lista(x.pz).replace("Nada aberto aqui.", "Nenhum prazo neste dia.")}</div>` +
-      (x.pl.length ? `<div class="sec-s"><h3>Planejadas para o dia</h3>${lista(x.pl)}</div>` : "");
+    const evLi = e => `<li>${evBtn(e, `${e.allDay ? t("dia_todo") : fmtTime.format(e.start)} · ${e.short}`)}<small>${[e.flex ? t("bloco_flexivel") : t("compromisso_fixo"), frLabel(frenteEv(e)), e.cal].filter(Boolean).map(esc).join(" · ")}</small></li>`;
+    h = `<h2 id="sTit">${DOW_LONG[dowOf(d)]}, ${diaDeMes(Number(d.slice(8)), +d.slice(5, 7) - 1)}</h2><p class="canon">${esc(relLabel(d))}${x.fer.length ? " · " + esc(x.fer.map(e => e.title).join(", ")) : ""}</p>` +
+      `<div class="sec-s"><h3>${t("h_compromissos")}</h3>${x.comp.length ? `<ul class="lista-s">${x.comp.map(evLi).join("")}</ul>` : `<p class="vazio">${t("nada_marcado_agenda")}</p>`}</div>` +
+      `<div class="sec-s"><h3>${t("h_prazos_reais")}</h3>${lista(x.pz).replace(t("nada_aberto_aqui"), t("nenhum_prazo_dia"))}</div>` +
+      (x.pl.length ? `<div class="sec-s"><h3>${t("h_planejadas_dia")}</h3>${lista(x.pl)}</div>` : "");
   } else if (a.k === "frente") {
     const l = (S.items || []).filter(i => relevante(i) && inFr(i, a.id)).sort((x, y) => score(y) - score(x));
     if (a.id === "🛒 Lista de Compras") {
       const grupos = [...CATS_COMPRA, ""].map(c => ({ c, l: l.filter(i => c ? i.cat === c : !CATS_COMPRA.includes(i.cat)) })).filter(g => g.l.length);
-      h = `<h2 id="sTit">Lista de Compras</h2><p class="canon">${plural(l.length, "item para comprar", "itens para comprar")}</p>` +
-        grupos.map(g => `<h3 class="et" style="margin:18px 0 6px">${esc(g.c || "Sem categoria")}</h3>${lista(g.l)}`).join("");
+      h = `<h2 id="sTit">Lista de Compras</h2><p class="canon">${plural(l.length, t("item_comprar_s"), t("item_comprar_p"))}</p>` +
+        grupos.map(g => `<h3 class="et" style="margin:18px 0 6px">${esc(dispWord(g.c) || t("sem_categoria"))}</h3>${lista(g.l)}`).join("");
     } else
-    h = `<h2 id="sTit">${esc(FR[a.id].label)}</h2><p class="canon">${plural(l.length, "demanda aberta", "demandas abertas")}</p>${lista(l)}`;
+    h = `<h2 id="sTit">${esc(frLabel(a.id))}</h2><p class="canon">${plural(l.length, t("demanda_aberta_s"), t("demanda_aberta_p"))}</p>${lista(l)}`;
   } else if (a.k === "proj") {
     const l = (S.items || []).filter(i => isOpen(i) && projOf(i) === a.id).sort((x, y) => score(y) - score(x));
     if (a.id === "Lista de Compras") {
       const grupos = [...CATS_COMPRA, ""].map(c => ({ c, l: l.filter(i => c ? i.cat === c : !CATS_COMPRA.includes(i.cat)) })).filter(g => g.l.length);
-      h = `<h2 id="sTit">Lista de Compras</h2><p class="canon">${plural(l.length, "item para comprar", "itens para comprar")}</p>` +
-        (grupos.length ? grupos.map(g => `<h3 class="et" style="margin:18px 0 6px">${esc(g.c || "Sem categoria")}</h3>${lista(g.l)}`).join("") : `<p class="vazio">Nada para comprar.</p>`);
+      h = `<h2 id="sTit">Lista de Compras</h2><p class="canon">${plural(l.length, t("item_comprar_s"), t("item_comprar_p"))}</p>` +
+        (grupos.length ? grupos.map(g => `<h3 class="et" style="margin:18px 0 6px">${esc(dispWord(g.c) || t("sem_categoria"))}</h3>${lista(g.l)}`).join("") : `<p class="vazio">${t("nada_comprar")}</p>`);
     } else
-    h = `<h2 id="sTit">${esc(a.id)}</h2><p class="canon">Projeto · ${plural(l.length, "demanda aberta", "demandas abertas")}</p>${lista(l)}`;
+    h = `<h2 id="sTit">${esc(a.id)}</h2><p class="canon">${tf("projeto_dot_tpl", plural(l.length, t("demanda_aberta_s"), t("demanda_aberta_p")))}</p>${lista(l)}`;
   } else if (a.k === "roda") {
-    h = `<h2 id="sTit">Notas da Roda da Vida</h2>` + rodaFormHtml(a.id);
+    h = `<h2 id="sTit">${t("h_notas_roda")}</h2>` + rodaFormHtml(a.id);
   } else if (a.k === "mesRoda") {
     const mid = a.id, [ay, am] = mid.split("-");
     const row = rodaLinhaDoMes(mid);
@@ -1248,16 +1642,16 @@ function renderSolta() {
     const justificativas = row ? row["Justificativas das notas"] || "" : "";
     const mudancas = row ? row["Mudanças propostas"] || "" : "";
     const resumo = row ? row["Resumo do mês"] || "" : "";
-    h = `<h2 id="sTit">${MON_CAP(+am - 1)} de ${ay}</h2><p class="canon">${ehAtual ? "mês atual" : (mid > curMes ? "mês futuro" : "mês passado")}</p>` +
+    h = `<h2 id="sTit">${MON_CAP(+am - 1)} de ${ay}</h2><p class="canon">${ehAtual ? t("mes_atual") : (mid > curMes ? t("mes_futuro") : t("mes_passado"))}</p>` +
       `<div style="display:flex;align-items:center;gap:20px;flex-wrap:wrap;margin-top:12px"><svg viewBox="0 0 320 320" width="180" height="180" style="flex:none">${rodaSvgInner(row)}</svg>` +
-      `<div style="flex:1;min-width:150px"><span class="et">Média do mês</span><p class="corpo" style="margin-top:4px;font-size:21px">${row ? mediaDoRow(row) : "—"}</p></div></div>` +
-      (fechado ? `<div class="sec-s"><h3>Resumo do mês</h3>${resumo ? `<p class="corpo" style="white-space:pre-wrap">${esc(resumo)}</p>` : `<p class="vazio">Ainda não gerado.</p><div class="acoes" style="margin-top:10px"><button type="button" class="b v" id="btnResumoMes" ${!mcp ? "disabled" : ""}>Gerar resumo do mês</button></div>`}</div>` : "") +
-      `<div class="sec-s"><h3>Prioridade do mês</h3>${prioridade ? `<p class="corpo">${esc(prioridade)}</p>` : `<p class="vazio">${fechado ? "Não foi definida." : "Ainda não definida."}</p>`}</div>` +
-      (necessidade ? `<div class="sec-s"><h3>Maior necessidade</h3><p class="corpo">${esc(necessidade)}</p></div>` : "") +
-      (justificativas ? `<div class="sec-s"><h3>Por que essas notas</h3><p class="corpo" style="white-space:pre-wrap">${esc(justificativas)}</p></div>` : "") +
-      (mudancas ? `<div class="sec-s"><h3>Mudanças propostas</h3><p class="corpo">${esc(mudancas)}</p></div>` : "") +
-      (!row ? `<p class="vazio" style="margin-top:14px">Notas da Roda da Vida ainda não lançadas para este mês.</p>` : "") +
-      (!(mid > curMes) ? `<div class="acoes" style="margin-top:18px"><button type="button" class="b v" id="btnEditarMesAtual">${ehAtual ? "Atualizar notas deste mês" : "Lançar ou corrigir a autoavaliação deste mês"}</button></div>` : "");
+      `<div style="flex:1;min-width:150px"><span class="et">${t("media_mes_label")}</span><p class="corpo" style="margin-top:4px;font-size:21px">${row ? mediaDoRow(row) : "—"}</p></div></div>` +
+      (fechado ? `<div class="sec-s"><h3>${t("h_resumo_mes")}</h3>${resumo ? `<p class="corpo" style="white-space:pre-wrap">${esc(resumo)}</p>` : `<p class="vazio">${t("ainda_nao_gerado")}</p><div class="acoes" style="margin-top:10px"><button type="button" class="b v" id="btnResumoMes" ${!mcp ? "disabled" : ""}>${t("gerar_resumo_btn")}</button></div>`}</div>` : "") +
+      `<div class="sec-s"><h3>${t("h_prioridade_mes")}</h3>${prioridade ? `<p class="corpo">${esc(prioridade)}</p>` : `<p class="vazio">${fechado ? t("nao_definida") : t("ainda_nao_definida")}</p>`}</div>` +
+      (necessidade ? `<div class="sec-s"><h3>${t("h_maior_necessidade")}</h3><p class="corpo">${esc(necessidade)}</p></div>` : "") +
+      (justificativas ? `<div class="sec-s"><h3>${t("h_por_que_notas")}</h3><p class="corpo" style="white-space:pre-wrap">${esc(justificativas)}</p></div>` : "") +
+      (mudancas ? `<div class="sec-s"><h3>${t("h_mudancas")}</h3><p class="corpo">${esc(mudancas)}</p></div>` : "") +
+      (!row ? `<p class="vazio" style="margin-top:14px">${t("notas_nao_lancadas")}</p>` : "") +
+      (!(mid > curMes) ? `<div class="acoes" style="margin-top:18px"><button type="button" class="b v" id="btnEditarMesAtual">${ehAtual ? t("atualizar_notas_mes") : t("lancar_autoavaliacao")}</button></div>` : "");
   }
   c.innerHTML = h;
   if (a.k === "roda") { const b = $("btnSalvarRoda"); if (b) b.addEventListener("click", () => salvarRoda(b, a.id)); }
@@ -1278,6 +1672,8 @@ function montarPaginaMenu() {
   const bpf = $("btnSalvarPerfil"); if (bpf) bpf.addEventListener("click", () => salvarPerfil(bpf));
   const ba = $("btnAnoAnt"); if (ba) ba.addEventListener("click", () => { ANO_VISTO = String(Number(ANO_VISTO) - 1); renderMesesBar(); montarPaginaMenu(); });
   const bp = $("btnAnoProx"); if (bp) bp.addEventListener("click", () => { ANO_VISTO = String(Number(ANO_VISTO) + 1); renderMesesBar(); montarPaginaMenu(); });
+  const lpt = $("btnLangPt"); if (lpt) lpt.addEventListener("click", () => setLang("pt"));
+  const len = $("btnLangEn"); if (len) len.addEventListener("click", () => setLang("en"));
 }
 function abrirPaginaMenu() { $("mesaView").hidden = true; $("paginaMenu").hidden = false; $("btnMenuAmelie").setAttribute("aria-pressed", "true"); montarPaginaMenu(); window.scrollTo(0, 0); }
 function fecharPaginaMenu() { $("paginaMenu").hidden = true; $("mesaView").hidden = false; $("btnMenuAmelie").setAttribute("aria-pressed", "false"); }
@@ -1342,6 +1738,7 @@ async function carregarNota(i) {
   NOTA[i.id] = { st: "lendo" }; if (aberto) renderSolta();
   const b = CORPO[i.id] || {};
   const fatos = { nome: i.name, tipo: i.tipo, rodaDaVida: FR[i.frente] ? FR[i.frente].label : "", lista: i.lista, status: i.status, prioridade: i.prio, energia: i.energia, prazo: i.prazo, dataPlanejada: i.plan, adiamentos: i.adi, observacao: i.obs, anotacoesDaPagina: b.txt || "" };
+  const idiomaResposta = LANG === "en" ? "Write resumo, proximos_passos and atencao in natural English." : "Escreva resumo, proximos_passos e atencao em português.";
   const prompt = `Você é a Amélie, secretária pessoal da Isabela: culta, calma, clara e discreta. Escreva uma nota curta sobre o item abaixo, para que ela saiba o essencial antes de agir. Responda só com JSON.
 
 Hoje é ${DOW_LONG[dowOf(TODAY)]}, ${TODAY}.
@@ -1352,6 +1749,7 @@ Regras:
 - resumo: 2 a 3 frases dizendo o que é e em que pé está.
 - proximos_passos: até 4 passos curtos tirados das anotações; se não houver, [].
 - atencao: uma frase sobre risco de prazo ou informação que falta, ou null.
+- ${idiomaResposta}
 
 Formato: {"resumo":"","proximos_passos":[],"atencao":null}
 
@@ -1366,22 +1764,22 @@ Registro: ${JSON.stringify(fatos).slice(0, 6000)}`;
 function extrasItem(i) {
   let h = "";
   const nt = NOTA[i.id];
-  if (sample && i.id) h += `<section class="nota"><h3>Nota da Amélie</h3>${!nt || nt.st === "lendo" ? `<p class="vazio">A Amélie está lendo o registro…</p>` : nt.st === "err" ? `<p class="vazio">${nt.code === "not_granted" ? "Libere o Claude para esta página para ver a nota." : "Não consegui escrever a nota agora."}</p>` : `<p>${esc(nt.resumo)}</p>${nt.passos.length ? `<ol>${nt.passos.map(x => `<li>${esc(x)}</li>`).join("")}</ol>` : ""}${nt.atencao ? `<p style="color:var(--terracota)">${esc(nt.atencao)}</p>` : ""}`}</section>`;
-  if (i.id && mcp) { const b = CORPO[i.id]; h += `<section class="sec-s"><h3>Anotações da página</h3>${!b || b.st === "lendo" ? `<p class="vazio">Buscando as anotações…</p>` : b.st === "err" ? `<p class="aviso-cx">Não consegui buscar as anotações agora.</p>` : (b.html || `<p class="vazio">Ainda não há anotações.</p>`)}</section>`; }
+  if (sample && i.id) h += `<section class="nota"><h3>${t("h_nota_amelie")}</h3>${!nt || nt.st === "lendo" ? `<p class="vazio">${t("lendo_registro")}</p>` : nt.st === "err" ? `<p class="vazio">${nt.code === "not_granted" ? t("libere_claude") : t("nao_consegui_nota")}</p>` : `<p>${esc(nt.resumo)}</p>${nt.passos.length ? `<ol>${nt.passos.map(x => `<li>${esc(x)}</li>`).join("")}</ol>` : ""}${nt.atencao ? `<p style="color:var(--terracota)">${esc(nt.atencao)}</p>` : ""}`}</section>`;
+  if (i.id && mcp) { const b = CORPO[i.id]; h += `<section class="sec-s"><h3>${t("h_anotacoes")}</h3>${!b || b.st === "lendo" ? `<p class="vazio">${t("buscando_anotacoes")}</p>` : b.st === "err" ? `<p class="aviso-cx">${t("nao_consegui_anotacoes")}</p>` : (b.html || `<p class="vazio">${t("sem_anotacoes")}</p>`)}</section>`; }
   if (EDIT && EDIT.id === i.id) {
     const f = EDIT.f;
-    h += `<section class="edita" aria-label="Editar"><label class="nm" for="ef_name">Nome<input id="ef_name" data-ef="name" value="${esc(f.name)}"></label>
+    h += `<section class="edita" aria-label="${esc(t('h_editar'))}"><label class="nm" for="ef_name">${esc(t('nome_label'))}<input id="ef_name" data-ef="name" value="${esc(f.name)}"></label>
       <div class="campos">
-        <label>Status<select id="ef_status" data-ef="status">${opts(STATUSES, f.status, true)}</select></label>
-        <label>Prioridade<select id="ef_prio" data-ef="prio">${opts(PRIOS, f.prio, true)}</select></label>
-        <label>Roda da Vida<select id="ef_frente" data-ef="frente">${opts(FRENTES, f.frente, true, x => FR[x].label)}</select></label>
-        <label>Energia<select id="ef_energia" data-ef="energia">${opts(ENERGIAS, f.energia, true)}</select></label>
-        <label>Lista<select id="ef_lista" data-ef="lista">${opts(LISTAS, f.lista, true)}</select></label>
-        <label>Prazo<input id="ef_prazo" type="date" data-ef="prazo" value="${esc(f.prazo)}"></label>
-        <label>Planejada<input id="ef_plan" type="date" data-ef="plan" value="${esc(f.plan)}"></label>
+        <label>${esc(t('field_status'))}<select id="ef_status" data-ef="status">${opts(STATUSES, f.status, true)}</select></label>
+        <label>${esc(t('field_prioridade'))}<select id="ef_prio" data-ef="prio">${opts(PRIOS, f.prio, true)}</select></label>
+        <label>${esc(t('field_roda'))}<select id="ef_frente" data-ef="frente">${opts(FRENTES, f.frente, true, x => frLabel(x))}</select></label>
+        <label>${esc(t('field_energia'))}<select id="ef_energia" data-ef="energia">${opts(ENERGIAS, f.energia, true)}</select></label>
+        <label>${esc(t('field_lista'))}<select id="ef_lista" data-ef="lista">${opts(LISTAS, f.lista, true)}</select></label>
+        <label>${esc(t('field_prazo'))}<input id="ef_prazo" type="date" data-ef="prazo" value="${esc(f.prazo)}"></label>
+        <label>${esc(t('field_planejada'))}<input id="ef_plan" type="date" data-ef="plan" value="${esc(f.plan)}"></label>
       </div>
-      <label class="nm" for="ef_obs">Observação<textarea id="ef_obs" data-ef="obs" rows="3">${esc(f.obs)}</textarea></label>
-      <div class="acoes"><button type="button" class="b" data-edit-save>Salvar</button><button type="button" class="b v" data-edit-cancel>Cancelar</button></div></section>`;
+      <label class="nm" for="ef_obs">${esc(t('field_observacao'))}<textarea id="ef_obs" data-ef="obs" rows="3">${esc(f.obs)}</textarea></label>
+      <div class="acoes"><button type="button" class="b" data-edit-save>${esc(t('salvar'))}</button><button type="button" class="b v" data-edit-cancel>${esc(t('cancelar'))}</button></div></section>`;
   }
   return h;
 }
@@ -1406,15 +1804,15 @@ async function salvarEdicao(btn) {
   if (f.prazo !== (i.prazo || "")) dt("Prazo", f.prazo);
   if (f.plan !== (i.plan || "")) dt("Data planejada", f.plan);
   const o = i.prazo || i.plan || "", nv = f.prazo || f.plan || ""; if (nv !== o) dt("Quando", nv);
-  if (!Object.keys(P).length) { EDIT = null; renderSolta(); toast("Nada mudou."); return; }
+  if (!Object.keys(P).length) { EDIT = null; renderSolta(); toast(t("toast_nada_mudou")); return; }
   btn.disabled = true;
   try {
     await mcp.callTool(N, "notion-update-page", { page_id: i.id, command: "update_properties", properties: P, allow_async: false });
     if (P.Nome) { i.name = P.Nome; i.parts = P.Nome.split(/ \| | — /).map(x => x.trim()); }
     if (P.Status) i.status = f.status; i.prio = f.prio; i.frente = f.frente; i.energia = f.energia; if (f.lista) i.lista = f.lista; i.obs = f.obs;
     i.prazo = f.prazo || null; i.plan = f.plan || null;
-    EDIT = null; delete NOTA[i.id]; renderAll(); toast("Alterações salvas."); atualizar();
-  } catch (e) { btn.disabled = false; toast(e && (e.code === "server_unavailable" || e.code === "upstream_error") ? "A gravação não confirmou. Confira antes de salvar de novo." : "Não consegui salvar agora."); }
+    EDIT = null; delete NOTA[i.id]; renderAll(); toast(t("toast_alteracoes_salvas")); atualizar();
+  } catch (e) { btn.disabled = false; toast(e && (e.code === "server_unavailable" || e.code === "upstream_error") ? t("toast_gravacao_nao_confirmou") : t("toast_erro_salvar_generico")); }
 }
 
 /* ---------- gravações no Notion ---------- */
@@ -1431,13 +1829,13 @@ async function completar(id) {
   S.busy.add(id); renderAll();
   try {
     await setStatus(id, DONE); i.status = DONE; S.busy.delete(id); renderAll();
-    toast(`Concluída: ${i.parts[0]}`, async () => { S.busy.add(id); renderAll(); try { await setStatus(id, prev); i.status = prev; toast("Voltou para a lista."); } catch { toast("Não consegui desfazer. Ajuste pela conversa com a Amélie."); } finally { S.busy.delete(id); renderAll(); atualizar(); } });
+    toast(tf("toast_concluida_tpl", i.parts[0]), async () => { S.busy.add(id); renderAll(); try { await setStatus(id, prev); i.status = prev; toast(t("toast_voltou_lista")); } catch { toast(t("toast_erro_desfazer")); } finally { S.busy.delete(id); renderAll(); atualizar(); } });
     atualizar();
-  } catch (e) { S.busy.delete(id); renderAll(); toast(e && e.code === "server_unavailable" ? "O Notion não confirmou. Espere a próxima leitura antes de tentar de novo." : "Não consegui marcar no Notion agora."); }
+  } catch (e) { S.busy.delete(id); renderAll(); toast(e && e.code === "server_unavailable" ? t("toast_notion_nao_confirmou") : t("toast_erro_marcar")); }
 }
 async function reabrir(id) {
   const i = (S.items || []).find(x => x.id === id); if (!i || !mcp) return;
-  try { await setStatus(id, "⬜ A fazer"); i.status = "⬜ A fazer"; toast(`Reaberta: ${i.parts[0]}`); renderAll(); atualizar(); } catch { toast("Não consegui reabrir agora."); }
+  try { await setStatus(id, "⬜ A fazer"); i.status = "⬜ A fazer"; toast(tf("toast_reaberta_tpl", i.parts[0])); renderAll(); atualizar(); } catch { toast(t("toast_erro_reabrir")); }
 }
 
 /* ---------- recado: a Isa fala, a Amélie organiza ---------- */
@@ -1468,7 +1866,7 @@ Formato: {"registros":[{"nome":"","classificacao":null,"tipo":"","frente":"","li
 Anotação: """${text.slice(0, 2000)}"""`;
 }
 const buildName = d => String(d.nome || "").trim();
-const opts = (arr, v, blank, lab) => (blank ? `<option value="">—</option>` : "") + arr.map(x => `<option value="${esc(x)}"${x === v ? " selected" : ""}>${esc(lab ? lab(x) : x)}</option>`).join("");
+const opts = (arr, v, blank, lab) => (blank ? `<option value="">—</option>` : "") + arr.map(x => `<option value="${esc(x)}"${x === v ? " selected" : ""}>${esc((lab || dispFull)(x))}</option>`).join("");
 function renderPrevia() {
   const box = $("previa");
   if (!draft) { box.hidden = true; box.innerHTML = ""; return; }
@@ -1476,20 +1874,20 @@ function renderPrevia() {
   box.innerHTML = draft.regs.map((d, k) => `<div class="ficha">
       <div class="nome" id="pNome${k}">${esc(buildName(d))}</div>
       <div class="campos">
-        <label>Nome<input id="f${k}_nome" data-k="${k}" data-f="nome" value="${esc(d.nome || "")}"></label>
-        <label>Classificação<select id="f${k}_classificacao" data-k="${k}" data-f="classificacao">${opts(CLASSES, d.classificacao, true)}</select></label>
-        <label>Tipo<select id="f${k}_tipo" data-k="${k}" data-f="tipo">${opts(TIPOS, d.tipo)}</select></label>
-        <label>Roda da Vida<select id="f${k}_frente" data-k="${k}" data-f="frente">${opts(FRENTES, d.frente, true, f => FR[f].label)}</select></label>
-        <label>Lista<select id="f${k}_lista" data-k="${k}" data-f="lista">${opts(LISTAS, d.lista)}</select></label>
-        <label>Prazo<input id="f${k}_prazo" type="date" data-k="${k}" data-f="prazo" value="${esc(d.prazo || "")}"></label>
-        <label>Planejada<input id="f${k}_dataPlanejada" type="date" data-k="${k}" data-f="dataPlanejada" value="${esc(d.dataPlanejada || "")}"></label>
-        <label>Início<input id="f${k}_horaInicio" type="time" data-k="${k}" data-f="horaInicio" value="${esc(d.horaInicio || "")}"></label>
-        <label>Fim<input id="f${k}_horaFim" type="time" data-k="${k}" data-f="horaFim" value="${esc(d.horaFim || "")}"></label>
-        <label>Prioridade<select id="f${k}_prioridade" data-k="${k}" data-f="prioridade">${opts(PRIOS, d.prioridade, true)}</select></label>
-        <label>Energia<select id="f${k}_energia" data-k="${k}" data-f="energia">${opts(ENERGIAS, d.energia, true)}</select></label>
+        <label>${esc(t('nome_label'))}<input id="f${k}_nome" data-k="${k}" data-f="nome" value="${esc(d.nome || "")}"></label>
+        <label>${esc(t('classificacao_label'))}<select id="f${k}_classificacao" data-k="${k}" data-f="classificacao">${opts(CLASSES, d.classificacao, true)}</select></label>
+        <label>${esc(t('field_tipo'))}<select id="f${k}_tipo" data-k="${k}" data-f="tipo">${opts(TIPOS, d.tipo)}</select></label>
+        <label>${esc(t('field_roda'))}<select id="f${k}_frente" data-k="${k}" data-f="frente">${opts(FRENTES, d.frente, true, f => frLabel(f))}</select></label>
+        <label>${esc(t('field_lista'))}<select id="f${k}_lista" data-k="${k}" data-f="lista">${opts(LISTAS, d.lista)}</select></label>
+        <label>${esc(t('field_prazo'))}<input id="f${k}_prazo" type="date" data-k="${k}" data-f="prazo" value="${esc(d.prazo || "")}"></label>
+        <label>${esc(t('field_planejada'))}<input id="f${k}_dataPlanejada" type="date" data-k="${k}" data-f="dataPlanejada" value="${esc(d.dataPlanejada || "")}"></label>
+        <label>${esc(t('inicio_label'))}<input id="f${k}_horaInicio" type="time" data-k="${k}" data-f="horaInicio" value="${esc(d.horaInicio || "")}"></label>
+        <label>${esc(t('fim_label'))}<input id="f${k}_horaFim" type="time" data-k="${k}" data-f="horaFim" value="${esc(d.horaFim || "")}"></label>
+        <label>${esc(t('field_prioridade'))}<select id="f${k}_prioridade" data-k="${k}" data-f="prioridade">${opts(PRIOS, d.prioridade, true)}</select></label>
+        <label>${esc(t('field_energia'))}<select id="f${k}_energia" data-k="${k}" data-f="energia">${opts(ENERGIAS, d.energia, true)}</select></label>
       </div>
-      <div class="acoes"><button type="button" class="b" data-save-n="${k}">Salvar nas demandas</button>${(d.dataPlanejada || d.prazo) && d.horaInicio ? `<button type="button" class="b v" data-save-g="${k}">Pôr na agenda</button>` : ""}<button type="button" class="b v" data-drop="${k}">Descartar</button></div>
-    </div>`).join("") + (draft.duvidas.length ? `<p class="duvidas">Vale confirmar: ${esc(draft.duvidas.join(" · "))}</p>` : "");
+      <div class="acoes"><button type="button" class="b" data-save-n="${k}">${esc(t('salvar_demandas_btn'))}</button>${(d.dataPlanejada || d.prazo) && d.horaInicio ? `<button type="button" class="b v" data-save-g="${k}">${esc(t('por_agenda_btn'))}</button>` : ""}<button type="button" class="b v" data-drop="${k}">${esc(t('descartar_btn'))}</button></div>
+    </div>`).join("") + (draft.duvidas.length ? `<p class="duvidas">${tf("vale_confirmar_tpl", esc(draft.duvidas.join(" · ")))}</p>` : "");
 }
 $("previa").addEventListener("input", ev => {
   const el = ev.target.closest("[data-f]"); if (!el || !draft) return;
@@ -1505,8 +1903,8 @@ $("previa").addEventListener("click", ev => {
 function descartar(k) { draft.regs.splice(k, 1); if (!draft.regs.length) { draft = null; $("capTexto").value = ""; $("capNota").textContent = ""; } renderPrevia(); }
 async function salvarNotion(k, btn) {
   const d = draft && draft.regs[k]; if (!d) return;
-  if (!mcp) { toast("Sem acesso ao Notion nesta visualização."); return; }
-  if (!d.nome) { toast("Falta o nome."); return; }
+  if (!mcp) { toast(t("toast_sem_notion")); return; }
+  if (!d.nome) { toast(t("toast_falta_nome")); return; }
   const props = { Nome: buildName(d), Tipo: d.tipo || "Tarefa", Lista: d.lista || "📥 Inbox", Status: d.lista === "📥 Inbox" ? "📥 Inbox" : "⬜ A fazer", Origem: "Amélia" };
   if (d.frente) props["Roda da Vida"] = d.frente;
   if (d.prioridade) props.Prioridade = d.prioridade;
@@ -1516,45 +1914,45 @@ async function salvarNotion(k, btn) {
   if (d.dataPlanejada) { props["date:Data planejada:start"] = d.dataPlanejada; props["date:Data planejada:is_datetime"] = 0; }
   const q = d.prazo || d.dataPlanejada; if (q) { props["date:Quando:start"] = q; props["date:Quando:is_datetime"] = 0; }
   btn.disabled = true;
-  try { await mcp.callTool(N, "notion-create-pages", { parent: { type: "data_source_id", data_source_id: DS_ID }, pages: [{ properties: props }], allow_async: false }); toast(`Guardado: ${props.Nome}`); descartar(k); atualizar(); }
-  catch (e) { btn.disabled = false; toast(e && (e.code === "server_unavailable" || e.code === "upstream_error") ? "O Notion não confirmou. Espere a próxima leitura e veja se entrou antes de salvar de novo." : "Não consegui salvar no Notion agora."); }
+  try { await mcp.callTool(N, "notion-create-pages", { parent: { type: "data_source_id", data_source_id: DS_ID }, pages: [{ properties: props }], allow_async: false }); toast(tf("toast_guardado_tpl", props.Nome)); descartar(k); atualizar(); }
+  catch (e) { btn.disabled = false; toast(e && (e.code === "server_unavailable" || e.code === "upstream_error") ? t("toast_notion_nao_confirmou_salvar") : t("toast_erro_salvar_notion")); }
 }
 async function salvarAgenda(k, btn) {
   const d = draft && draft.regs[k]; if (!d) return;
-  if (!mcp) { toast("Sem acesso à agenda nesta visualização."); return; }
+  if (!mcp) { toast(t("toast_sem_agenda")); return; }
   const day = d.dataPlanejada || d.prazo;
-  if (!d.horaFim) { toast("Diga até que horas vai (campo Fim)."); const f = $(`f${k}_horaFim`); if (f) f.focus(); return; }
-  if (d.horaFim <= d.horaInicio) { toast("O fim precisa ser depois do início."); return; }
+  if (!d.horaFim) { toast(t("toast_diga_horas_fim")); const f = $(`f${k}_horaFim`); if (f) f.focus(); return; }
+  if (d.horaFim <= d.horaInicio) { toast(t("toast_fim_depois_inicio")); return; }
   const summary = buildName(d);
   const a = new Date(`${day}T${d.horaInicio}:00-03:00`), b = new Date(`${day}T${d.horaFim}:00-03:00`);
   const choque = eventsOn(day).filter(e => !e.allDay && e.start < b && a < e.end);
-  if (choque.length && !d._ok) { d._ok = true; toast(`Conflita com ${choque.map(e => e.short).join(", ")}. Toque em “Pôr na agenda” de novo para criar mesmo assim.`); return; }
+  if (choque.length && !d._ok) { d._ok = true; toast(tf("toast_conflita_tpl", choque.map(e => e.short).join(", "))); return; }
   btn.disabled = true;
   try {
     const ev = { summary, startTime: `${day}T${d.horaInicio}:00-03:00`, endTime: `${day}T${d.horaFim}:00-03:00`, timeZone: TZ, description: "Criado pela Amélie (Mesa)." };
     const cid = gcalColorId(d.frente); if (cid) ev.colorId = cid;
-    await mcp.callTool(G, "create_event", ev); toast(`Na agenda: ${summary}, ${brFull(day)} ${d.horaInicio}`); descartar(k); atualizar();
+    await mcp.callTool(G, "create_event", ev); toast(tf("toast_na_agenda_tpl", summary, brFull(day), d.horaInicio)); descartar(k); atualizar();
   }
-  catch (e) { btn.disabled = false; toast(e && (e.code === "server_unavailable" || e.code === "upstream_error") ? "A agenda não confirmou. Confira antes de tentar de novo." : "Não consegui criar o evento agora."); }
+  catch (e) { btn.disabled = false; toast(e && (e.code === "server_unavailable" || e.code === "upstream_error") ? t("toast_agenda_nao_confirmou") : t("toast_erro_criar_evento")); }
 }
 const CICLO_RE = /menstru|period[oa]\s+(chegou|veio|comecou)|ciclo\s+comecou/;
 async function registrarCiclo() {
-  if (!mcp) { $("capNota").textContent = "Sem acesso ao Notion nesta visualização."; return; }
-  $("capBtn").disabled = true; $("capNota").textContent = "Anotando…";
+  if (!mcp) { $("capNota").textContent = t("toast_sem_notion"); return; }
+  $("capBtn").disabled = true; $("capNota").textContent = t("anotando");
   try {
     await mcp.callTool(N, "notion-create-pages", { parent: { type: "data_source_id", data_source_id: CICLO_DS }, pages: [{ properties: { "Data": TODAY, "date:Referência:start": TODAY, "date:Referência:is_datetime": 0 } }], allow_async: false });
-    $("capTexto").value = ""; $("capNota").textContent = "Marcado. Obrigada por avisar.";
+    $("capTexto").value = ""; $("capNota").textContent = t("marcado_obrigada");
     atualizar();
-  } catch (e) { $("capNota").textContent = "Não consegui registrar agora. Tente de novo."; }
+  } catch (e) { $("capNota").textContent = t("toast_erro_registrar"); }
   $("capBtn").disabled = false;
 }
 $("capForm").addEventListener("submit", async ev => {
   ev.preventDefault();
   const text = $("capTexto").value.trim(); if (!text) { $("capTexto").focus(); return; }
   if (CICLO_RE.test(normTxt(text))) { await registrarCiclo(); return; }
-  if (!sample) { $("capNota").textContent = "Para organizar o recado, a mesa precisa do Claude, que não está liberado nesta visualização. Mande a anotação para a Amélie no chat."; return; }
+  if (!sample) { $("capNota").textContent = t("precisa_claude"); return; }
   if (capCtl) capCtl.abort(); capCtl = new AbortController();
-  $("capBtn").disabled = true; $("capNota").textContent = "Selado. Organizando…";
+  $("capBtn").disabled = true; $("capNota").textContent = t("selado_organizando");
   try {
     const r = await sample.json(capturePrompt(text), { modelTier: "default", signal: capCtl.signal, cache: false });
     const regs = (r && Array.isArray(r.registros) ? r.registros : []).filter(x => x && x.nome).slice(0, 4).map(x => {
@@ -1571,10 +1969,10 @@ $("capForm").addEventListener("submit", async ev => {
     });
     if (!regs.length) throw { code: "invalid_json" };
     draft = { regs, duvidas: Array.isArray(r.duvidas) ? r.duvidas.filter(x => typeof x === "string") : [] }; renderPrevia();
-    $("capNota").textContent = mcp ? (regs.length > 1 ? `Organizei em ${regs.length} registros. Confira e salve cada um.` : "Organizei assim. Confira e salve.") : "Sem acesso ao Notion nesta visualização; não dá para salvar daqui.";
+    $("capNota").textContent = mcp ? (regs.length > 1 ? tf("organizei_varios_tpl", regs.length) : t("organizei_um")) : t("sem_notion_nao_salva");
   } catch (e) {
     const c = e && e.code;
-    $("capNota").textContent = c === "cancelled" ? "" : c === "not_granted" || c === "sampling_disabled" ? "O Claude não está liberado para esta página, então o recado não é organizado aqui." : c === "rate_limited" ? "Muitos recados seguidos. Tente de novo em instantes." : "Não consegui organizar esse recado. Tente escrever de outro jeito.";
+    $("capNota").textContent = c === "cancelled" ? "" : c === "not_granted" || c === "sampling_disabled" ? t("claude_nao_liberado") : c === "rate_limited" ? t("muitos_recados") : t("nao_consegui_organizar");
   } finally { $("capBtn").disabled = false; }
 });
 
@@ -1626,8 +2024,64 @@ function startWatches() {
 }
 async function atualizar() { if (!mcp) return; try { await mcp.invalidate(N); await mcp.invalidate(G); } catch {} }
 
+/* Textos fixos do HTML que nenhuma função de render já troca — traduzidos uma vez no início e de novo a cada troca de idioma. */
+function traduzEstatico() {
+  const set = (sel, txt) => { const el = typeof sel === "string" ? document.querySelector(sel) : sel; if (el) el.textContent = txt; };
+  const attr = (sel, name, txt) => { const el = typeof sel === "string" ? document.querySelector(sel) : sel; if (el) el.setAttribute(name, txt); };
+
+  if ($("btnMenuAmelie")) $("btnMenuAmelie").innerHTML = `<span class="ic" aria-hidden="true">☰</span>${esc(t("menu_label"))}`;
+  attr("#btnMenuAmelie", "aria-label", t("menu_abrir_aria"));
+  attr(".topo", "aria-label", t("aria_hoje_mesa"));
+  attr("#paginaMenu", "aria-label", t("aria_menu_pagina"));
+  set(".prazos > .et", t("prazos"));
+  set(".tese", t("tese"));
+  attr(".carimbo-btn", "aria-label", t("ir_noticias_aria"));
+  set('label[for="notas"]', t("notas_label"));
+  attr("#notas", "placeholder", t("notas_placeholder"));
+  attr(".selo-btn", "aria-label", t("recado_aria"));
+  set(".caderno > .et:not(.sub-et)", t("prioridades"));
+  set(".caderno > .et.sub-et", t("urgencias"));
+  set(".trilha span", t("mesa_continua"));
+
+  set("#recado .cap", t("cap_i"));
+  set("#h-recado", t("h_recado"));
+  const recadoP = document.querySelector("#recado .tit p"); if (recadoP) recadoP.textContent = t("recado_desc");
+  set('label[for="capTexto"]', t("capTexto_label"));
+  attr("#capTexto", "placeholder", t("capTexto_placeholder"));
+  attr("#capBtn", "title", t("selar_title")); attr("#capBtn", "aria-label", t("selar_aria"));
+
+  const col2 = document.querySelector("#recado > div:nth-child(2)");
+  if (col2) { set(col2.querySelector(".cap"), t("cap_ii")); set(col2.querySelector("h2"), t("h_comentario")); set(col2.querySelector(".tit p"), t("comentario_desc")); }
+  set(".salvia > .et", t("papel_salvia"));
+
+  set("#noticias .cap", t("cap_iii")); set("#h-noticias", t("h_noticias"));
+  const newsP = document.querySelector("#noticias .tit p");
+  if (newsP) { const span = $("newsMeta"); newsP.innerHTML = ""; if (span) { if (!span.textContent) span.textContent = t("fontes_default"); newsP.appendChild(span); } newsP.appendChild(document.createTextNode(t("news_desc_suffix"))); }
+
+  set("#mes .cap", t("cap_iv"));
+  const mesP = document.querySelector("#mes .tit p"); if (mesP) mesP.textContent = t("mes_desc");
+
+  const semanaSec = document.querySelector('section[aria-labelledby="h-semana"]');
+  if (semanaSec) {
+    const c1 = semanaSec.children[0], c2 = semanaSec.children[1];
+    if (c1) { set(c1.querySelector(".cap"), t("cap_v")); set("#h-semana", t("h_semana")); set(c1.querySelector(".tit p"), t("semana_desc")); }
+    const ets = semanaSec.querySelectorAll(".kraft > .et");
+    if (ets[0]) ets[0].textContent = t("passou_prazo"); if (ets[1]) ets[1].textContent = t("depende_outro");
+    if (c2) { set(c2.querySelector(".cap"), t("cap_vi")); set(c2.querySelector("h2"), t("h_adiante")); }
+  }
+  const frentesSec = document.querySelector('section[aria-labelledby="h-frentes"]');
+  if (frentesSec) { set(frentesSec.querySelector(".cap"), t("cap_vii")); set("#h-frentes", t("h_frentes")); set(frentesSec.querySelector(".tit p"), t("frentes_desc")); }
+  set("#btnRoda", t("atualizar_notas_mes"));
+
+  set(".fim > p", t("footer_frase"));
+  const topoBtn = document.querySelector('.fim button[data-ir="topo"]'); if (topoBtn) topoBtn.textContent = t("voltar_topo");
+  set("#btnVoltarMesa", t("voltar_mesa"));
+  set("#voltar", t("voltar_mesa"));
+}
+
+traduzEstatico();
 renderAll();
-setInterval(() => { const t = spDay(new Date()); if (t !== TODAY) { TODAY = t; if (mcp) startWatches(); } renderAll(); }, 60000);
+setInterval(() => { const hj = spDay(new Date()); if (hj !== TODAY) { TODAY = hj; if (mcp) startWatches(); } renderAll(); }, 60000);
 (async () => {
   const cl = window.claude;
   const semAcesso = () => { S.itemsErr = S.worldErr = { code: "capability_disabled" }; CALS.forEach(c => S.evErr[c.id] = { code: "capability_disabled" }); renderAll(); };
