@@ -727,7 +727,7 @@ const DICT = {
     prioridade_mes_tpl: "Prioridade de %s (mês que vem)", prioridade_mes_placeholder: "o foco principal do próximo mês", salvar: "Salvar",
 
     perfil_intro: "Quem você é, pra Amélie saber com quem está falando. Isto é informação sua — fica só no Notion, nunca no código deste painel.",
-    nome_label: "Nome", profissao_label: "Profissão", sobre_label: "O que a Amélie deve saber sobre você",
+    nome_label: "Nome", apelido_label: "Como prefere ser chamada", apelido_placeholder: "o jeito mais natural de alguém te chamar — a Amélie usa esse em vez do nome completo", profissao_label: "Profissão", sobre_label: "O que a Amélie deve saber sobre você",
     sobre_placeholder: "rotina, prioridades, particularidades — o que mais importa pra ela entender seu dia a dia",
 
     menu_titulo: "Menu da Amélie", menu_sub: "O que ela é, quem você é pra ela, a quem está ligada, e a conversa deste mês",
@@ -889,7 +889,7 @@ const DICT = {
     prioridade_mes_tpl: "Priority for %s (next month)", prioridade_mes_placeholder: "the main focus for next month", salvar: "Save",
 
     perfil_intro: "Who you are, so Amélie knows who she's talking to. This is your information — it stays only in Notion, never in this panel's code.",
-    nome_label: "Name", profissao_label: "Occupation", sobre_label: "What Amélie should know about you",
+    nome_label: "Name", apelido_label: "Preferred nickname", apelido_placeholder: "however you'd naturally be called — Amélie uses this instead of your full name", profissao_label: "Occupation", sobre_label: "What Amélie should know about you",
     sobre_placeholder: "routine, priorities, quirks — whatever matters most for her to understand your day-to-day",
 
     menu_titulo: "Amélie's menu", menu_sub: "What she is, who you are to her, who she's connected to, and this month's conversation",
@@ -1050,7 +1050,12 @@ const QUOTES_EN = [
 
 const $ = id => document.getElementById(id);
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
-const nomeUsuario = () => (S.perfil && S.perfil["Nome"] && String(S.perfil["Nome"]).trim()) || t("vc_generico");
+const nomeUsuario = () => {
+  const p = S.perfil || {};
+  const apelido = p["Apelido"] && String(p["Apelido"]).trim();
+  const nome = p["Nome"] && String(p["Nome"]).trim();
+  return apelido || nome || t("vc_generico");
+};
 const plain = s => String(s || "").replace(/^\S+\s/, "");
 /* exibição em inglês dos valores fixos do Notion (Status/Lista/Tipo/Energia/Categoria) — o valor gravado nunca muda, só a palavra mostrada. */
 const WORD_EN = {
@@ -1608,6 +1613,7 @@ function perfilHtml() {
   return `<p style="margin:0 0 14px;font-size:13px;color:var(--tinta-2)">${t("perfil_intro")}</p>` +
     `<div class="edita" aria-label="${esc(t('menu_h_personalizacao'))}">` +
     `<label class="nm" for="pf_nome">${esc(t('nome_label'))}<input id="pf_nome" type="text" value="${esc(p["Nome"] || "")}"></label>` +
+    `<label class="nm" for="pf_apelido">${esc(t('apelido_label'))}<input id="pf_apelido" type="text" placeholder="${esc(t('apelido_placeholder'))}" value="${esc(p["Apelido"] || "")}"></label>` +
     `<label class="nm" for="pf_profissao">${esc(t('profissao_label'))}<input id="pf_profissao" type="text" value="${esc(p["Profissão"] || "")}"></label>` +
     `<label class="nm" for="pf_sobre">${esc(t('sobre_label'))}<textarea id="pf_sobre" rows="3" placeholder="${esc(t('sobre_placeholder'))}">${esc(p["O que a Amélie deve saber"] || "")}</textarea></label>` +
     `<div class="acoes"><button type="button" class="b" id="btnSalvarPerfil" ${!mcp ? "disabled" : ""}>${esc(t('salvar'))}</button></div></div>`;
@@ -1617,6 +1623,7 @@ async function salvarPerfil(btn) {
   btn.disabled = true;
   const props = {
     "Nome": (($("pf_nome") || {}).value || "").trim(),
+    "Apelido": (($("pf_apelido") || {}).value || "").trim(),
     "Profissão": (($("pf_profissao") || {}).value || "").trim(),
     "O que a Amélie deve saber": (($("pf_sobre") || {}).value || "").trim()
   };
