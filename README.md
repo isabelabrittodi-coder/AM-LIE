@@ -6,7 +6,7 @@
 
 If you already use Claude and have thought about setting up an agent that organizes your life through WhatsApp, Notion, and Google Calendar, the hard part is already done here: the personality, the design, the decision logic. Download it, connect it to your own accounts, and Amélie already knows who she is.
 
-Amélie is calm, cultured, discreet. She knows your routine — calendar, tasks, the Wheel of Life (the 12 areas of your life) — and takes care of the details without you having to ask. She never asks "what do you want me to do" for everything; she understands, decides within what's already been asked, and lets you know what she did.
+Amélie is calm, cultured, discreet. She knows your routine — calendar, tasks, the Wheel of Life (the 12 areas of your life) — and takes care of the details without you having to ask. She never asks "what do you want me to do" for everything — she understands the request, makes decisions within its scope, and lets you know what she did.
 
 **What she does:**
 - Organizes calendar and tasks between Google Calendar and Notion, always kept in sync.
@@ -14,7 +14,7 @@ Amélie is calm, cultured, discreet. She knows your routine — calendar, tasks,
 - Talks over WhatsApp: daily, weekly, monthly, and yearly briefings.
 - Runs the monthly Wheel of Life review, with a score and justification for each area, and generates an AI summary of the month.
 - Detects the language of whoever is writing (Portuguese or English) and replies in it, without asking.
-- Knows how to use Gmail, Google Drive, and an optional financial agent, always with the same rule of never acting without authorization when the matter is sensitive.
+- Knows how to use Gmail, Google Drive, and a potential financial agent, always under the same rule: never act without authorization on sensitive matters.
 
 Free, under the MIT license (see [`LICENSE`](LICENSE)) — use it, copy it, modify it.
 
@@ -24,12 +24,12 @@ At the heart of Amélie is a way of looking at your whole life instead of just a
 
 | Axis | Areas |
 |---|---|
-| 🔵 **Professional** | Social contribution · Finances and possessions · Fulfillment and purpose |
+| 🔵 **Professional** | Social contribution · Finances and assets · Fulfillment and purpose |
 | 🟢 **Personal** | Health and vitality · Intellectual development · Emotional balance |
 | 🩷 **Relationships** | Family · Romantic relationships · Social life |
-| 🟡 **Quality of life** | Spirituality · Fulfillment and happiness · Leisure and fun |
+| 🟡 **Quality of life** | Spirituality · Plenitude and happiness · Leisure and fun |
 
-Each axis has its own color, and each area its own shade of that color — that's how the month's map and the Google Calendar events show up colored in the panel: at a glance, you can see which axis of life each commitment falls into.
+Each axis has its own color, and each area its own shade of that color — that's how the month's map and the Google Calendar events appear color-coded in the panel: at a glance, you can see which axis of life each commitment falls into.
 
 **How this ties into the rest:** these 12 areas aren't a standalone questionnaire — they're the same classification used for *every* task and commitment Amélie organizes in Notion and Google Calendar. The visual Wheel of Life is just the summary of all that: each slice grows or shrinks according to what's actually happening in your routine.
 
