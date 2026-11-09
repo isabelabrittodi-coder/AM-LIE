@@ -18,6 +18,23 @@ Amélie é parisiense, calma, culta, discreta. Ela conhece sua rotina — agenda
 
 Gratuita, sob licença MIT (ver [`LICENSE`](LICENSE)) — use, copie, modifique.
 
+## A Roda da Vida
+
+O coração da Amélie é um jeito de olhar pra vida inteira em vez de só pra lista de tarefas: a **Roda da Vida**, 12 áreas agrupadas em 4 grandes eixos.
+
+| Eixo | Áreas |
+|---|---|
+| 🔵 **Profissional** | Contribuição social · Finanças e bens · Realização e propósito |
+| 🟢 **Pessoal** | Saúde e disposição · Desenvolvimento do intelecto · Equilíbrio emocional |
+| 🩷 **Relacionamentos** | Família · Relacionamentos amorosos · Vida social |
+| 🟡 **Qualidade de vida** | Espiritualidade · Plenitude e felicidade · Lazer e diversão |
+
+Cada eixo tem sua própria cor, e cada área sua própria sombra dessa cor — é assim que o mapa do mês e os eventos do Google Agenda ficam coloridos no painel: de relance, dá pra ver em qual eixo da vida cada compromisso cai.
+
+**Como isso integra com o resto:** essas 12 áreas não são um questionário solto — são a mesma classificação usada em *cada* tarefa e compromisso que a Amélie organiza no Notion e no Google Agenda. A Roda da Vida visual é só o resumo de tudo isso: cada fatia cresce ou encolhe de acordo com o que está acontecendo de fato na sua rotina.
+
+**O ritual mensal:** no último domingo do mês, Amélie conduz o fechamento — cada uma das 12 áreas recebe uma nota de 1 a 10, e **a nota sempre vem com a justificativa de por que ela é essa e não outra** (nunca só o número). A partir daí, pra qualquer área que você sinta que merece subir, você propõe o que quer mudar — e essa proposta vira a prioridade do **mês seguinte**, não do mês que terminou. É o ciclo: olhar pra trás com honestidade, decidir um plano pontual pra frente, e deixar a Amélie lembrar disso ao longo do mês que começa.
+
 ## O que tem aqui
 
 - **`AMELIE_PERSONA.md`** — quem a Amélie é: origem, voz, regras de comportamento, como ela trata agenda, Roda da Vida, ciclo menstrual, idioma e as ferramentas que ela sabe usar (Notion, Google Agenda, WhatsApp, Gmail, Drive). É a fonte de verdade da personalidade — tudo nela funciona para qualquer pessoa, nunca cita um dado específico de ninguém.
