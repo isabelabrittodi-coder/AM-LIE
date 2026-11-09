@@ -165,6 +165,13 @@ h1,h2,h3,h4{margin:0;text-wrap:balance}
 .b:hover{filter:brightness(1.08)}
 .b:disabled{opacity:.5;cursor:default}
 .duvidas{font:13px/1.45 var(--f-etiqueta);color:var(--terracota);margin:0}
+.avancado{margin-top:18px;border-top:1px solid var(--linha);padding-top:14px}
+.avancado summary{cursor:pointer;font:500 10.5px var(--f-etiqueta);letter-spacing:.2em;text-transform:uppercase;color:var(--bordeaux);list-style:none;user-select:none}
+.avancado summary::-webkit-details-marker{display:none}
+.avancado summary::before{content:"+ ";display:inline-block}
+.avancado[open] summary::before{content:"– "}
+.avancado .edita{margin-top:14px;box-shadow:none;padding:0;background:none}
+.pos-salvar{font:13px/1.5 var(--f-etiqueta);color:var(--tinta-2);margin:14px 0 0;max-width:56ch}
 
 /* comentário da Amélie: papel sálvia com clipe */
 .salvia{position:relative;background:var(--salvia);color:var(--marfim);padding:30px 28px 26px;box-shadow:3px 5px 0 var(--sombra)}
@@ -377,22 +384,28 @@ button.cel:hover{background:rgba(220,203,174,.35)}
 <!-- ================= CONFIGURAÇÃO INICIAL (só aparece sem config salva neste navegador) ================= -->
 <section class="pagina-menu" id="telaConfig" hidden aria-label="Configuração">
   <div class="pagina-menu-in">
-    <h2 class="menu-h1">Configuração</h2>
-    <p class="menu-sub">Antes de começar, a Mesa da Amélie precisa saber onde ficam suas próprias bases no Notion e sua agenda. Isso fica guardado só neste navegador — nunca é enviado a mim ou a qualquer servidor.</p>
+    <h2 class="menu-h1">Vamos começar</h2>
+    <p class="menu-sub">Só duas coisas pra Amélie abrir a mesa: onde ficam suas tarefas e sua Roda da Vida no Notion. Isso fica guardado só neste navegador — nunca é enviado a mim ou a qualquer servidor.</p>
     <p class="menu-sub" style="font-style:normal;font-size:13px;color:var(--terracota)">Importante: publique esta página como o <b>seu próprio</b> Artifact e preencha com os <b>seus</b> IDs. Nunca abra o link do Artifact de outra pessoa para configurar o seu — cada instalação precisa ser independente.</p>
     <div class="menu-sec">
-      <div class="edita" aria-label="Configuração pessoal">
+      <div class="edita" aria-label="Configuração essencial">
         <label class="nm" for="cf_ds">ID da base de tarefas ("Amélia — Controle — Geral")<input id="cf_ds" type="text" placeholder="collection://... ou o ID da base, da URL do Notion"></label>
         <label class="nm" for="cf_roda">ID da base "Roda da Vida — Mensal"<input id="cf_roda" type="text" placeholder="collection://..."></label>
-        <label class="nm" for="cf_view">ID da visualização de itens (opcional)<input id="cf_view" type="text" placeholder="view://..."></label>
-        <label class="nm" for="cf_world">ID da página do briefing de notícias (opcional)<input id="cf_world" type="text" placeholder="ID da página"></label>
-        <label class="nm" for="cf_ciclo">ID da base "Ciclo" (opcional)<input id="cf_ciclo" type="text" placeholder="collection://..."></label>
-        <label class="nm" for="cf_perfil">ID da base "Perfil" (opcional)<input id="cf_perfil" type="text" placeholder="collection://..."></label>
-        <label class="nm" for="cf_cal">Identificador da sua agenda principal no Google<input id="cf_cal" type="text" placeholder="primary (ou o e-mail de outra agenda)" value="primary"></label>
-        <label class="nm" for="cf_json">Configuração avançada — cole aqui pra restaurar tudo de uma vez (opcional, substitui os campos acima)<textarea id="cf_json" rows="4" placeholder='{"DS_ID":"...","CALS":[...],"PROJECTS":[...],"PROJ_IDS":{...},"FLEX_PROJETOS":[...]}'></textarea></label>
         <div class="acoes"><button type="button" class="b" id="btnSalvarConfig">Salvar e começar</button><button type="button" class="b v" id="btnCancelarConfig" hidden>Cancelar</button></div>
       </div>
       <p class="vazio" style="margin-top:10px">O ID de uma base do Notion é o trecho de letras e números na URL dela, depois do nome do espaço de trabalho.</p>
+      <p class="pos-salvar">Pronto — isso já é o suficiente pra começar. Como prefere ser chamada, sua rotina, sua profissão: a Amélie vai aprendendo aos poucos, ou você preenche quando quiser em <b>Menu › Personalização</b>.</p>
+      <details class="avancado">
+        <summary>Configurações avançadas</summary>
+        <div class="edita" aria-label="Configuração avançada">
+          <label class="nm" for="cf_cal">Identificador da sua agenda principal no Google<input id="cf_cal" type="text" placeholder="primary (ou o e-mail de outra agenda)" value="primary"></label>
+          <label class="nm" for="cf_view">ID da visualização de itens (opcional)<input id="cf_view" type="text" placeholder="view://..."></label>
+          <label class="nm" for="cf_world">ID da página do briefing de notícias (opcional)<input id="cf_world" type="text" placeholder="ID da página"></label>
+          <label class="nm" for="cf_ciclo">ID da base "Ciclo" (opcional)<input id="cf_ciclo" type="text" placeholder="collection://..."></label>
+          <label class="nm" for="cf_perfil">ID da base "Perfil" (opcional)<input id="cf_perfil" type="text" placeholder="collection://..."></label>
+          <label class="nm" for="cf_json">Colar tudo de uma vez (opcional, substitui os campos acima)<textarea id="cf_json" rows="4" placeholder='{"DS_ID":"...","CALS":[...],"PROJECTS":[...],"PROJ_IDS":{...},"FLEX_PROJETOS":[...]}'></textarea></label>
+        </div>
+      </details>
     </div>
   </div>
 </section>
