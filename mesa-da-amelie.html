@@ -20,7 +20,11 @@
   --f-mao:"La Belle Aurore","Bradley Hand",cursive;
 }
 *{box-sizing:border-box}
-html{background:var(--mesa)}
+html{background:var(--mesa);scrollbar-color:var(--kraft) var(--mesa);scrollbar-width:thin}
+::-webkit-scrollbar{width:12px;height:12px}
+::-webkit-scrollbar-track{background:var(--mesa)}
+::-webkit-scrollbar-thumb{background:var(--kraft);border-radius:7px;border:3px solid var(--mesa)}
+::-webkit-scrollbar-thumb:hover{background:var(--bordeaux)}
 body{margin:0;background:var(--mesa);color:var(--tinta);font:400 15px/1.5 var(--f-etiqueta);
   padding-inline:16px;padding-block:28px 80px;overflow-x:hidden;
   background-image:radial-gradient(ellipse at 50% 20%,rgba(255,255,255,.55),transparent 60%),radial-gradient(rgba(36,32,30,.09) .6px,transparent .7px);
