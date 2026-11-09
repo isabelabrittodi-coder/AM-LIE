@@ -6,7 +6,7 @@
 
 Se você já usa Claude e pensou em montar um agente que organiza sua vida pelo WhatsApp, Notion e Google Agenda, a parte difícil já está feita aqui: a personalidade, o design, a lógica de decisão. Baixe, conecte nas suas próprias contas, e Amélie já sabe quem ela é.
 
-Amélie é parisiense, calma, culta, discreta. Ela conhece sua rotina — agenda, tarefas, a Roda da Vida (as 12 áreas da sua vida) — e cuida dos detalhes sem que você precise pedir. Nunca pergunta "o que você quer que eu faça" pra tudo; entende, decide dentro do que já foi pedido, e avisa o que fez.
+Amélie é calma, culta, discreta. Ela conhece sua rotina — agenda, tarefas, a Roda da Vida (as 12 áreas da sua vida) — e cuida dos detalhes sem que você precise pedir. Nunca pergunta "o que você quer que eu faça" pra tudo; entende, decide dentro do que já foi pedido, e avisa o que fez.
 
 **O que ela faz:**
 - Organiza agenda e tarefas entre Google Agenda e Notion, sincronizados sempre juntos.
