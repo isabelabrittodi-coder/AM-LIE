@@ -404,7 +404,7 @@ button.cel:hover{background:rgba(220,203,174,.35)}
       <img class="deco estrela" src="img/estrela-bordeaux.png" alt="">
       <h1>Amélie</h1>
       <div class="sobre" id="sobre">Mesa de bordo</div>
-      <p class="tese">Uma página calma no centro, a colagem nas margens e, em cada papel, uma função.</p>
+      <p class="tese">Amélie conhece quem usa este painel, e, por conhecê-la, sabe como cuidar de cada detalhe todos os dias.</p>
       <p class="resumo num" id="resumo"></p>
       <div class="linha-carimbo">
         <button type="button" class="carimbo-btn" data-ir="noticias" aria-label="Ir para as notícias do dia"><img class="deco" src="img/carimbo.png" alt=""></button>
@@ -609,7 +609,7 @@ const DICT = {
   pt: {
     menu_label: "Menu", menu_abrir_aria: "Abrir menu da Amélie",
     hoje: "Hoje", lendo_agenda: "lendo a agenda…", prazos: "Prazos", lendo: "Lendo…",
-    mesa_de_bordo: "Mesa de bordo", tese: "Uma página calma no centro, a colagem nas margens e, em cada papel, uma função.",
+    mesa_de_bordo: "Mesa de bordo", tese_tpl: "Amélie conhece %s, e, por conhecê-la, sabe como cuidar de cada detalhe todos os dias.",
     ir_noticias_aria: "Ir para as notícias do dia", notas_label: "Notas", notas_placeholder: "para você viver\nno aqui\ne\nno agora",
     recado_aria: "Escrever um recado para a Amélie", prioridades: "Prioridades", urgencias: "urgências",
     mesa_continua: "e a mesa continua…",
@@ -771,7 +771,7 @@ const DICT = {
   en: {
     menu_label: "Menu", menu_abrir_aria: "Open Amélie's menu",
     hoje: "Today", lendo_agenda: "reading the calendar…", prazos: "Deadlines", lendo: "Reading…",
-    mesa_de_bordo: "Dashboard", tese: "A calm page in the centre, the collage in the margins, and in each paper, a purpose.",
+    mesa_de_bordo: "Dashboard", tese_tpl: "Amélie knows %s, and knowing her, she knows how to take care of every detail, every day.",
     ir_noticias_aria: "Go to today's news", notas_label: "Notes", notas_placeholder: "to live\nin the here\nand\nnow",
     recado_aria: "Write a note to Amélie", prioridades: "Priorities", urgencias: "urgent",
     mesa_continua: "and the desk goes on…",
@@ -1141,6 +1141,7 @@ function itemRow(i, chk = true) {
 function renderTopo() {
   const d = TODAY.split("-");
   $("sobre").textContent = `${t("mesa_de_bordo")} · ${DOW_LONG[dowOf(TODAY)].split("-")[0]}, ${diaDeMes(Number(d[2]), +d[1] - 1)}`;
+  const teseEl = document.querySelector(".tese"); if (teseEl) teseEl.textContent = tf("tese_tpl", nomeUsuario());
   $("agendaTit").textContent = `${t("hoje")}, ${DOW_LONG[dowOf(TODAY)].split("-")[0]}`;
   // agenda hora a hora
   const ag = $("agenda");
@@ -2074,7 +2075,6 @@ function traduzEstatico() {
   attr(".topo", "aria-label", t("aria_hoje_mesa"));
   attr("#paginaMenu", "aria-label", t("aria_menu_pagina"));
   set(".prazos > .et", t("prazos"));
-  set(".tese", t("tese"));
   attr(".carimbo-btn", "aria-label", t("ir_noticias_aria"));
   set('label[for="notas"]', t("notas_label"));
   attr("#notas", "placeholder", t("notas_placeholder"));
