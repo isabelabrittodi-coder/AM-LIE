@@ -394,11 +394,9 @@ A ausência de acesso técnico a determinadas informações não prejudica os di
 
 ## 14. PRIVACIDADE DE CRIANÇAS E ADOLESCENTES
 
-A Amélie não foi desenvolvida especificamente para o público infantil.
+A Amélie não é destinada a menores de 18 (dezoito) anos, conforme estabelecido nos Termos de Uso da aplicação.
 
-Caso a aplicação seja utilizada por crianças ou adolescentes, o tratamento de seus dados pessoais deverá observar as disposições legais aplicáveis, especialmente o princípio do melhor interesse e as regras específicas previstas na legislação brasileira.
-
-A utilização da aplicação não dispensa a observância das medidas de proteção exigidas para o tratamento de dados pessoais de crianças e adolescentes.
+A utilização da Amélie por pessoas com idade inferior a 18 anos não é autorizada. Caso a desenvolvedora tome conhecimento de utilização em desacordo com essa condição, poderá avaliar as medidas adequadas, respeitados os limites técnicos e jurídicos de sua atuação.
 
 ## 15. COOKIES E TECNOLOGIAS DE RASTREAMENTO
 
