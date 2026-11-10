@@ -692,6 +692,7 @@ const DICT = {
     prioridade_mes_tpl: "Prioridade de %s (mês que vem)", prioridade_mes_placeholder: "o foco principal do próximo mês", salvar: "Salvar",
 
     perfil_intro: "Quem você é, pra Amélie saber com quem está falando. Isto é informação sua — fica só no Notion, nunca no código deste painel.",
+    perfil_sem_base: "Esta instalação ainda não tem uma base \"Perfil\" conectada no Notion. Peça para a Amélie criar essa base pra você — depois é só voltar aqui.",
     nome_label: "Nome", apelido_label: "Como prefere ser chamada", apelido_placeholder: "o jeito mais natural de alguém te chamar — a Amélie usa esse em vez do nome completo", profissao_label: "Profissão", sobre_label: "O que a Amélie deve saber sobre você",
     sobre_placeholder: "rotina, prioridades, particularidades — o que mais importa pra ela entender seu dia a dia",
 
@@ -854,6 +855,7 @@ const DICT = {
     prioridade_mes_tpl: "Priority for %s (next month)", prioridade_mes_placeholder: "the main focus for next month", salvar: "Save",
 
     perfil_intro: "Who you are, so Amélie knows who she's talking to. This is your information — it stays only in Notion, never in this panel's code.",
+    perfil_sem_base: "This installation doesn't have a \"Perfil\" database connected in Notion yet. Ask Amélie to create that database for you — then just come back here.",
     nome_label: "Name", apelido_label: "Preferred nickname", apelido_placeholder: "however you'd naturally be called — Amélie uses this instead of your full name", profissao_label: "Occupation", sobre_label: "What Amélie should know about you",
     sobre_placeholder: "routine, priorities, quirks — whatever matters most for her to understand your day-to-day",
 
@@ -1576,6 +1578,7 @@ async function gerarResumoMes(mid, btn) {
 /* Conteúdo da página do Menu da Amélie: o que ela é, personalização, agentes conectados, histórico por ano e a avaliação do mês atual. */
 function perfilHtml() {
   const p = S.perfil || {};
+  if (!PERFIL_DS) return `<p style="margin:0 0 14px;font-size:13px;color:var(--tinta-2)">${t("perfil_intro")}</p><p class="vazio">${t("perfil_sem_base")}</p>`;
   return `<p style="margin:0 0 14px;font-size:13px;color:var(--tinta-2)">${t("perfil_intro")}</p>` +
     `<div class="edita" aria-label="${esc(t('menu_h_personalizacao'))}">` +
     `<label class="nm" for="pf_nome">${esc(t('nome_label'))}<input id="pf_nome" type="text" value="${esc(p["Nome"] || "")}"></label>` +
@@ -2039,7 +2042,7 @@ function startWatches() {
     else { S.evErr[cal.id] = ev.error; if (isDenial(ev.error.code)) delete S.ev[cal.id]; }
     renderAll();
   }, opt));
-  unsubs.push(mcp.watchTool(N, "notion-fetch", { id: WORLD_PAGE }, ev => {
+  if (WORLD_PAGE) unsubs.push(mcp.watchTool(N, "notion-fetch", { id: WORLD_PAGE }, ev => {
     if (ev.type === "data") { const p = ev.result.payload; const text = typeof p === "string" ? p : (p && p.text) || ""; const m = text.match(/```json\s*([\s\S]*?)```/);
       try { S.world = m ? JSON.parse(m[1]) : { noticias: [] }; S.worldErr = null; } catch { S.worldErr = { code: "tool_error" }; } }
     else { S.worldErr = ev.error; if (isDenial(ev.error.code)) S.world = null; }
@@ -2050,13 +2053,13 @@ function startWatches() {
     else { S.rodaErr = ev.error; if (isDenial(ev.error.code)) S.roda = null; }
     renderAll();
   }, { refetchInterval: 600000, cache: { staleTime: 120000 } }));
-  unsubs.push(mcp.watchTool(N, "notion-query-data-sources", { data: { mode: "rows", data_source_url: CICLO_DS, limit: 100 } }, ev => {
+  if (CICLO_DS) unsubs.push(mcp.watchTool(N, "notion-query-data-sources", { data: { mode: "rows", data_source_url: CICLO_DS, limit: 100 } }, ev => {
     if (ev.type === "data") { const p = ev.result.payload; const rows = (p && Array.isArray(p.results)) ? p.results : [];
       S.ciclo = rows.map(r => toSpDate(r["date:Referência:start"]) || r["Data"]).filter(Boolean).sort(); }
     else if (isDenial(ev.error.code)) S.ciclo = null;
     renderAll();
   }, { refetchInterval: 600000, cache: { staleTime: 120000 } }));
-  unsubs.push(mcp.watchTool(N, "notion-query-data-sources", { data: { mode: "rows", data_source_url: PERFIL_DS, limit: 1 } }, ev => {
+  if (PERFIL_DS) unsubs.push(mcp.watchTool(N, "notion-query-data-sources", { data: { mode: "rows", data_source_url: PERFIL_DS, limit: 1 } }, ev => {
     if (ev.type === "data") { const p = ev.result.payload; S.perfil = (p && Array.isArray(p.results) && p.results[0]) || null; S.perfilErr = null; }
     else { S.perfilErr = ev.error; if (isDenial(ev.error.code)) S.perfil = null; }
     renderAll();
