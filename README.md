@@ -45,9 +45,8 @@ Each axis has its own color, and each area its own shade of that color — that'
 ## Getting started
 
 1. **Connect Notion and Google Calendar** to your own Claude account, if you haven't already (Settings › Connectors on claude.ai).
-2. **Talk to Claude first, in a normal conversation** (with `AMELIE_PERSONA.md` pasted in, or as a Project's instructions). Tell it you want to set up Amélie — it'll ask your name, ask whether you already have a place in Notion for your tasks (or offer to set one up for you from a blank page), and set up the databases it needs (tasks, Wheel of Life, profile) directly through the Notion connector.
-3. **Publish `mesa-da-amelie.html` as your own Artifact on [claude.ai](https://claude.ai).** It doesn't work by just opening the file in a regular browser — it needs to be published as an Artifact to get access to the connectors and the AI feature that generates the monthly summaries. **Important: publish your own copy, never open someone else's Artifact link to set up yours** — each installation needs to stay independent from the others.
-4. **If you want WhatsApp**, follow `CONECTAR_WHATSAPP.md`.
+2. **Talk to Claude first, in a normal conversation** (with `AMELIE_PERSONA.md` pasted in, or as a Project's instructions). Tell it you want to set up Amélie — it'll ask your name, ask whether you already have a place in Notion for your tasks (or offer to set one up for you from a blank page), set up the databases it needs (tasks, Wheel of Life, profile) directly through the Notion connector, and then publish `mesa-da-amelie.html` as your own private Artifact, already pointed at your databases. You get a ready link back — nothing to configure, nothing to paste. **Important: that link is yours alone — never open someone else's Artifact link to set up yours**, each installation needs to stay independent from the others.
+3. **If you want WhatsApp**, follow `CONECTAR_WHATSAPP.md`.
 
 ## Why there's no personal data here
 
