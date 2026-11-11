@@ -1,86 +1,88 @@
-# Security Policy
+# POLÍTICA DE SEGURANÇA — AMÉLIE
 
-## 1. Commitment to Security and Privacy
+**Última atualização: 11 de novembro de 2026**
 
-Amélie is developed with a commitment to protecting users' privacy, personal data, and the integrity of information stored or processed through the application.
+## 1. COMPROMISSO COM SEGURANÇA E PRIVACIDADE
 
-Security and privacy are considered important aspects of the project's development and maintenance. The project aims to follow the principles of Privacy by Design and Privacy by Default, incorporating privacy and security considerations throughout the development lifecycle.
+A Amélie é desenvolvida com o compromisso de proteger a privacidade, os dados pessoais e a integridade das informações armazenadas ou processadas por meio da aplicação.
 
-Particular attention is given to the following principles:
+Segurança e privacidade são consideradas aspectos importantes do desenvolvimento e da manutenção do projeto. O projeto busca seguir os princípios de *Privacy by Design* e *Privacy by Default* (privacidade desde a concepção e por padrão), incorporando considerações de privacidade e segurança ao longo de todo o ciclo de desenvolvimento.
 
-- **Data minimization**: collecting and processing only the personal data necessary for specified purposes.
-- **Purpose limitation**: ensuring that personal data is processed for legitimate, specific, and transparent purposes.
-- **Transparency**: providing users with clear information about how their personal data is handled.
-- **Security and prevention**: adopting appropriate technical and organizational measures to protect personal data against unauthorized access, disclosure, alteration, loss, or destruction.
-- **Accountability**: maintaining responsibility for security practices and addressing reported vulnerabilities appropriately.
+Atenção especial é dada aos seguintes princípios:
 
-## 2. Supported Versions
+- **Minimização de dados**: coletar e processar apenas os dados pessoais necessários às finalidades especificadas.
+- **Limitação de finalidade**: garantir que os dados pessoais sejam tratados para finalidades legítimas, específicas e transparentes.
+- **Transparência**: fornecer aos usuários informações claras sobre como seus dados pessoais são tratados.
+- **Segurança e prevenção**: adotar medidas técnicas e organizacionais adequadas para proteger os dados pessoais contra acesso não autorizado, divulgação, alteração, perda ou destruição.
+- **Responsabilização**: manter a responsabilidade pelas práticas de segurança e tratar adequadamente as vulnerabilidades reportadas.
 
-Security updates are provided for the latest publicly available version of Amélie.
+## 2. VERSÕES SUPORTADAS
 
-Older versions may no longer receive security updates. Users are encouraged to keep their installations up to date.
+Atualizações de segurança são disponibilizadas para a versão mais recente e publicamente disponível da Amélie.
 
-## 3. Reporting a Vulnerability
+Versões anteriores podem deixar de receber atualizações de segurança. Recomenda-se que os usuários mantenham suas instalações atualizadas.
 
-If you discover a security vulnerability affecting Amélie, please report it privately and responsibly before making it publicly available.
+## 3. COMO REPORTAR UMA VULNERABILIDADE
 
-Reports may be submitted through either of the following channels:
+Caso você identifique uma vulnerabilidade de segurança que afete a Amélie, reporte-a de forma privada e responsável antes de torná-la pública.
 
-- **GitHub**: Private Vulnerability Reporting, if enabled for the repository.
-- **Reddit**: A private message to the project maintainer at [u/IsaBritto__](https://www.reddit.com/user/IsaBritto__/).
+O reporte pode ser feito por um dos seguintes canais:
 
-Please do not disclose security vulnerabilities through public GitHub Issues, discussions, comments, or other public channels before coordinating with the maintainer.
+- **GitHub**: *Private Vulnerability Reporting*, caso esteja habilitado para o repositório.
+- **Reddit**: mensagem privada à responsável pelo projeto, em [u/IsaBritto__](https://www.reddit.com/user/IsaBritto__/).
 
-## 4. Information to Include in a Report
+Não divulgue vulnerabilidades de segurança por meio de *Issues* públicas do GitHub, discussões, comentários ou outros canais públicos antes de coordenar com a responsável pelo projeto.
 
-To facilitate investigation, please provide, whenever possible:
+## 4. INFORMAÇÕES A INCLUIR NO REPORTE
 
-- A clear description of the vulnerability;
-- The affected component, feature, or version;
-- Steps to reproduce the issue;
-- The potential security or privacy impact;
-- Supporting technical evidence, where appropriate.
+Para facilitar a investigação, forneça, sempre que possível:
 
-Please do not include actual users' personal data, passwords, authentication credentials, access tokens, private memories, or other confidential information in your report.
+- Uma descrição clara da vulnerabilidade;
+- O componente, funcionalidade ou versão afetada;
+- Passos para reproduzir o problema;
+- O impacto potencial em termos de segurança ou privacidade;
+- Evidências técnicas de apoio, quando cabível.
 
-If demonstrating the vulnerability would require accessing another user's information, stop the test and report the issue without accessing or collecting that information.
+Não inclua, no seu reporte, dados pessoais reais de usuários, senhas, credenciais de autenticação, tokens de acesso, memórias privadas ou outras informações confidenciais.
 
-## 5. Responsible Disclosure
+Se demonstrar a vulnerabilidade exigir acessar informações de outro usuário, interrompa o teste e reporte o problema sem acessar ou coletar essas informações.
 
-Amélie encourages responsible disclosure and good-faith security research.
+## 5. DIVULGAÇÃO RESPONSÁVEL
 
-Researchers are requested to:
+A Amélie incentiva a divulgação responsável e a pesquisa de segurança de boa-fé.
 
-- Avoid exploiting vulnerabilities beyond what is strictly necessary to demonstrate their existence;
-- Refrain from accessing, modifying, deleting, or disclosing other users' information;
-- Avoid disrupting the availability or normal operation of the application;
-- Keep vulnerability details confidential until the maintainer has had a reasonable opportunity to investigate and address the issue.
+Pede-se às pessoas pesquisadoras que:
 
-Public disclosure should preferably take place after coordination with the maintainer and, where applicable, after a correction has been made.
+- Evitem explorar vulnerabilidades além do estritamente necessário para demonstrar sua existência;
+- Não acessem, alterem, excluam ou divulguem informações de outros usuários;
+- Evitem interromper a disponibilidade ou o funcionamento normal da aplicação;
+- Mantenham os detalhes da vulnerabilidade em confidencialidade até que a responsável pelo projeto tenha tido uma oportunidade razoável de investigar e corrigir o problema.
 
-## 6. Review and Remediation
+A divulgação pública deve, preferencialmente, ocorrer após coordenação com a responsável pelo projeto e, quando aplicável, após a correção ter sido implementada.
 
-All vulnerability reports will be reviewed individually.
+## 6. ANÁLISE E CORREÇÃO
 
-The maintainer will assess the reported issue, considering its severity, potential impact on users, and implications for personal data protection.
+Todos os reportes de vulnerabilidade serão analisados individualmente.
 
-Where appropriate, corrective measures will be developed and incorporated into the project.
+A responsável pelo projeto avaliará o problema reportado, considerando sua gravidade, o impacto potencial sobre os usuários e as implicações para a proteção de dados pessoais.
 
-There is currently no guaranteed response or remediation timeframe. Updates will be provided through the original reporting channel whenever reasonably possible.
+Quando cabível, medidas corretivas serão desenvolvidas e incorporadas ao projeto.
 
-## 7. Scope
+Atualmente, não há prazo garantido de resposta ou correção. Atualizações serão fornecidas pelo mesmo canal usado no reporte original, sempre que razoavelmente possível.
 
-This policy applies to security vulnerabilities affecting:
+## 7. ESCOPO
 
-- The Amélie application;
-- Its officially maintained source code;
-- Security-related features and mechanisms implemented within the project;
-- Components and integrations maintained directly by the project.
+Esta política se aplica a vulnerabilidades de segurança que afetem:
 
-Vulnerabilities affecting third-party services, libraries, or infrastructure should also be reported to their respective maintainers, where appropriate.
+- A aplicação Amélie;
+- Seu código-fonte oficialmente mantido;
+- Funcionalidades e mecanismos relacionados à segurança implementados no projeto;
+- Componentes e integrações mantidos diretamente pelo projeto.
 
-## 8. Additional Information
+Vulnerabilidades que afetem serviços, bibliotecas ou infraestrutura de terceiros também devem ser reportadas aos respectivos responsáveis, quando cabível.
 
-This policy establishes a communication channel for reporting security vulnerabilities. It does not constitute a guarantee that the application is free from vulnerabilities, nor does it replace the project's Privacy Policy, Terms of Use, or applicable data protection obligations.
+## 8. INFORMAÇÕES ADICIONAIS
 
-Amélie does not currently operate a formal bug bounty program. Reporting a vulnerability does not imply eligibility for financial compensation.
+Esta política estabelece um canal de comunicação para o reporte de vulnerabilidades de segurança. Ela não constitui garantia de que a aplicação está livre de vulnerabilidades, nem substitui a Política de Privacidade, os Termos de Uso do projeto, ou as obrigações legais de proteção de dados aplicáveis.
+
+Atualmente, a Amélie não opera um programa formal de recompensa por vulnerabilidades (*bug bounty*). Reportar uma vulnerabilidade não implica direito a qualquer compensação financeira.
